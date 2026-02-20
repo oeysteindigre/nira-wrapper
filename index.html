@@ -20,7 +20,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
   const iframe = document.getElementById("niraviewer");
 
-  // Vent til iframe faktisk har lastet inspection-linken
   iframe.addEventListener("load", function () {
 
     const viewer = new NiraAPI.Viewer(iframe, {
@@ -33,7 +32,11 @@ document.addEventListener("DOMContentLoaded", function () {
 
       const id = obj.sceneName + "|" + obj.objectName;
 
-      console.log("Picked:", id);
+      if (window.FileMaker) {
+        FileMaker.PerformScript("Test_From_Nira", id);
+      } else {
+        console.log("Picked:", id);
+      }
 
     });
 
@@ -43,5 +46,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
 </script>
 
+
 </body>
 </html>
+
