@@ -20,17 +20,22 @@ document.addEventListener("DOMContentLoaded", function () {
 
   const iframe = document.getElementById("niraviewer");
 
-  const viewer = new NiraAPI.Viewer(iframe, {
-    enableObjectPicking: true
-  });
+  // Vent til iframe faktisk har lastet inspection-linken
+  iframe.addEventListener("load", function () {
 
-  viewer.on("object_picked", function (obj) {
+    const viewer = new NiraAPI.Viewer(iframe, {
+      enableObjectPicking: true
+    });
 
-    if (obj.objectType !== "mesh") return;
+    viewer.on("object_picked", function (obj) {
 
-    const id = obj.sceneName + "|" + obj.objectName;
+      if (obj.objectType !== "mesh") return;
 
-    console.log("Picked:", id);
+      const id = obj.sceneName + "|" + obj.objectName;
+
+      console.log("Picked:", id);
+
+    });
 
   });
 
