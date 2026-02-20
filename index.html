@@ -26,17 +26,17 @@ document.addEventListener("DOMContentLoaded", function () {
       enableObjectPicking: true
     });
 
-    viewer.on("object_picked", function (obj) {
+    viewer.on("callout_selected", function (callout) {
 
-      if (obj.objectType !== "mesh") return;
+  console.log("CALLOUT:", callout);
 
-      const id = obj.sceneName + "|" + obj.objectName;
+  const id = callout.uuid;   // ← dette er nøkkelen
 
-      if (window.FileMaker) {
-        FileMaker.PerformScript("Test_From_Nira", id);
-      } else {
-        console.log("Picked:", id);
-      }
+  if (window.FileMaker) {
+    FileMaker.PerformScript("Test_From_Nira", id);
+  } else {
+    console.log("Callout UUID:", id);
+  }
 
     });
 
@@ -49,4 +49,5 @@ document.addEventListener("DOMContentLoaded", function () {
 
 </body>
 </html>
+
 
