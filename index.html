@@ -4,11 +4,14 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 
+<!-- Nira Viewer SDK -->
 <script src="https://sdk.nira.app/js/viewer.js"></script>
+
 </head>
 
 <body style="margin:0">
 
+<!-- Nira iframe -->
 <iframe id="niraviewer"
         frameborder="0"
         style="width:100vw;height:100vh;"
@@ -17,20 +20,21 @@
 
 <script>
 
-let niraViewer;
+window.addEventListener("load", function () {
 
-document.addEventListener("readystatechange", () => {
+  if (!window.NiraAPI) {
+    console.error("NiraAPI not loaded");
+    return;
+  }
 
-  if (document.readyState !== "interactive") return;
-
-  niraViewer = new NiraAPI.Viewer(
+  const viewer = new NiraAPI.Viewer(
     document.getElementById("niraviewer"),
     {
       enableObjectPicking: true
     }
   );
 
-  niraViewer.on("object_picked", (obj) => {
+  viewer.on("object_picked", function (obj) {
 
     if (obj.objectType !== "mesh") return;
 
