@@ -37,18 +37,13 @@ document.addEventListener("DOMContentLoaded", function () {
     });
 
     // Når en callout (f.eks A5) klikkes
-    viewer.on("callout_selected", function (callout) {
+    viewer.on("measurement_selected", function (measurement) {
 
-      console.log("CALLOUT OBJECT:", callout);
+  console.log("MEASUREMENT:", measurement);
 
-      if (!callout) return;
+  const id = measurement.uuid;
 
-      const calloutUUID = callout.uuid;
-
-      console.log("Callout UUID:", calloutUUID);
-
-      // Send til FileMaker hvis vi er i WebViewer
-      if (window.FileMaker && calloutUUID) {
+  if (window.FileMaker && id)  {
         FileMaker.PerformScript("Test_From_Nira", calloutUUID);
       }
 
@@ -62,3 +57,4 @@ document.addEventListener("DOMContentLoaded", function () {
 
 </body>
 </html>
+
