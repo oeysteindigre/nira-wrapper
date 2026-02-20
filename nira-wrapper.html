@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<script src="https://developers.nira.app/js-sdk"></script>
+</head>
+<body style="margin:0">
+<div id="viewer" style="width:100vw; height:100vh;"></div>
+
+<script>
+const viewer = new NiraViewer({
+  container: "viewer",
+  asset: "https://nidaros.nira.app/a/-0lmDLkGQpSjZn4Lyv3EVg/1",
+  enableObjectPicking: true
+});
+
+viewer.on("object_picked", function(e) {
+
+  const id = e.sceneName + "|" + e.objectName;
+
+  if (window.FileMaker) {
+    FileMaker.PerformScript("Test_From_Nira", id);
+  } else {
+    console.log("FileMaker not available");
+  }
+
+});
+</script>
+
+</body>
+</html>
