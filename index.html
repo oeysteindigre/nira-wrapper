@@ -2,6 +2,7 @@
 <html>
 <head>
   <meta charset="UTF-8">
+  <title>Nira Viewer API Test</title>
   <script src="https://cdn.nira.app/sdk/latest/nira-sdk.js"></script>
 </head>
 
@@ -10,7 +11,7 @@
   <iframe
     id="niraviewer"
     style="width:100vw; height:100vh; border:none;"
-    src="https://app.nira.app/model/YOUR_MODEL_ID">
+    src="https://app.nira.app/model/-0lmDLkGQpSjZn4Lyv3EVg">
   </iframe>
 
   <script>
@@ -25,48 +26,16 @@
           enableObjectPicking: false
         });
 
-        // ==============================
-        // 1️⃣ PRØV REN EVENT-LYTTER
-        // ==============================
+        // 🔥 Nå skal dette fungere
+        viewer.on("callout_activated", function(event) {
 
-        viewer.on("callout_activated", function (event) {
+          console.log("CALLOUT UUID:", event.uuid);
 
-          console.log("CALLOUT ACTIVATED:", event);
-
-          const key = event.uuid || event.id;
-
-          if (key && window.FileMaker) {
-            FileMaker.PerformScript("Test_From_Nira", key);
+          if (window.FileMaker) {
+            FileMaker.PerformScript("Test_From_Nira", event.uuid);
           }
 
         });
-
-
-        // ==============================
-        // 2️⃣ FALLBACK (hvis event ikke trigges)
-        // ==============================
-
-        let lastSelected = null;
-
-        setInterval(async function () {
-
-          if (!viewer.getCallouts) return;
-
-          const callouts = await viewer.getCallouts();
-          const selected = callouts.find(c => c.selected === true);
-
-          if (selected && selected.uuid !== lastSelected) {
-
-            lastSelected = selected.uuid;
-
-            console.log("CALLOUT SELECTED (polling):", selected);
-
-            if (window.FileMaker) {
-              FileMaker.PerformScript("Test_From_Nira", selected.uuid);
-            }
-          }
-
-        }, 500);
 
       });
 
