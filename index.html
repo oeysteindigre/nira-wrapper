@@ -23,10 +23,10 @@ window.addEventListener("message", function(event) {
   const logicalKey = meshName.replace(/_[^_]+$/, '');
 
   console.log("LOGICAL KEY:", logicalKey);
-  console.log("FileMaker exists:", typeof window.FileMaker);
+  console.log("Top FileMaker exists:", typeof window.top.FileMaker);
 
-  if (window.FileMaker) {
-    FileMaker.PerformScript("Test_From_Nira", logicalKey);
+  if (window.top && window.top.FileMaker) {
+    window.top.FileMaker.PerformScript("Test_From_Nira", logicalKey);
   }
 
 });
@@ -35,8 +35,10 @@ window.addEventListener("message", function(event) {
 
 
 
+
 </body>
 </html>
+
 
 
 
