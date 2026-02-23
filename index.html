@@ -16,23 +16,21 @@
   <script>
 window.addEventListener("message", function(event) {
 
-  if (!event.data || event.data.type !== "nira_object_picked") return;
+  if (!event.data) return;
+  if (event.data.type !== "nira_object_picked") return;
 
   const meshName = event.data.objectName;
 
-  // Fjern siste underscore + tall
   const logicalKey = meshName.replace(/_[^_]+$/, '');
 
   console.log("LOGICAL KEY:", logicalKey);
 
-  if (window.FileMaker) {
-    FileMaker.PerformScript("Test_From_Nira", logicalKey);
-  }
-
 });
 </script>
 
+
 </body>
 </html>
+
 
 
