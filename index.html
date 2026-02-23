@@ -14,19 +14,25 @@
   </iframe>
 
   <script>
-  window.addEventListener("message", function(event) {
+window.addEventListener("message", function(event) {
 
-    console.log("FULL EVENT OBJECT:", event);
-    console.log("EVENT DATA:", event.data);
-    console.log("TYPE:", typeof event.data);
+  if (!event.data || event.data.type !== "nira_object_picked") return;
 
-    if (typeof event.data === "object") {
-      console.log("KEYS:", Object.keys(event.data));
-    }
+  const meshName = event.data.objectName;
 
-  });
+  // Fjern siste underscore + tall
+  const logicalKey = meshName.replace(/_[^_]+$/, '');
+
+  console.log("LOGICAL KEY:", logicalKey);
+
+  if (window.FileMaker) {
+    FileMaker.PerformScript("Test_From_Nira", logicalKey);
+  }
+
+});
 </script>
 
 </body>
 </html>
+
 
