@@ -1,65 +1,77 @@
 <!DOCTYPE html>
 <html>
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-
-<!-- Nira Viewer SDK -->
-<script src="https://sdk.nira.app/js/viewer.js"></script>
-
-<style>
-html, body {
-  margin: 0;
-  height: 100%;
-  overflow: hidden;
-}
-#niraviewer {
-  width: 100%;
-  height: 100%;
-  border: 0;
-}
-</style>
-
+  <meta charset="UTF-8">
+  <script src="https://cdn.nira.app/sdk/latest/nira-sdk.js"></script>
 </head>
 
-<body>
+<body style="margin:0; overflow:hidden;">
 
-<iframe id="niraviewer"
-        src="https://nidaros.nira.app/g/y-93qFDYS2W-8ACrlqVj8A">
-</iframe>
+  <iframe
+    id="niraviewer"
+    style="width:100vw; height:100vh; border:none;"
+    src="https://app.nira.app/model/YOUR_MODEL_ID">
+  </iframe>
 
-<script>
+  <script>
+    document.addEventListener("DOMContentLoaded", function () {
 
-document.addEventListener("DOMContentLoaded", function () {
+      const iframe = document.getElementById("niraviewer");
 
-  const iframe = document.getElementById("niraviewer");
+      iframe.addEventListener("load", function () {
 
-  iframe.addEventListener("load", function () {
+        const viewer = new NiraAPI.Viewer(iframe, {
+          enableCallouts: true,
+          enableObjectPicking: false
+        });
 
-    if (!window.NiraAPI) {
-      console.error("NiraAPI not loaded");
-      return;
-    }
+        // ==============================
+        // 1️⃣ PRØV REN EVENT-LYTTER
+        // ==============================
 
-    const viewer = new NiraAPI.Viewer(iframe, {
-      enableCallouts: true,
-      enableObjectPicking: true
+        viewer.on("callout_activated", function (event) {
+
+          console.log("CALLOUT ACTIVATED:", event);
+
+          const key = event.uuid || event.id;
+
+          if (key && window.FileMaker) {
+            FileMaker.PerformScript("Test_From_Nira", key);
+          }
+
+        });
+
+
+        // ==============================
+        // 2️⃣ FALLBACK (hvis event ikke trigges)
+        // ==============================
+
+        let lastSelected = null;
+
+        setInterval(async function () {
+
+          if (!viewer.getCallouts) return;
+
+          const callouts = await viewer.getCallouts();
+          const selected = callouts.find(c => c.selected === true);
+
+          if (selected && selected.uuid !== lastSelected) {
+
+            lastSelected = selected.uuid;
+
+            console.log("CALLOUT SELECTED (polling):", selected);
+
+            if (window.FileMaker) {
+              FileMaker.PerformScript("Test_From_Nira", selected.uuid);
+            }
+          }
+
+        }, 500);
+
+      });
+
     });
-
-    console.log("Viewer initialized");
-
-    // Logg ALT som skjer
-    viewer.on("*", function (eventName, payload) {
-      console.log("EVENT:", eventName);
-      console.log("PAYLOAD:", payload);
-      console.log("----------------------------");
-    });
-
-  });
-
-});
-
-</script>
+  </script>
 
 </body>
 </html>
