@@ -14,10 +14,19 @@
   </iframe>
 
   <script>
-    window.addEventListener("message", function(event) {
-      console.log("MESSAGE FROM NIRA:", event.data);
-    });
-  </script>
+  window.addEventListener("message", function(event) {
+
+    console.log("FULL EVENT OBJECT:", event);
+    console.log("EVENT DATA:", event.data);
+    console.log("TYPE:", typeof event.data);
+
+    if (typeof event.data === "object") {
+      console.log("KEYS:", Object.keys(event.data));
+    }
+
+  });
+</script>
 
 </body>
 </html>
+
