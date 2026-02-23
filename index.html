@@ -3,7 +3,6 @@
 <head>
   <meta charset="UTF-8">
   <title>Nira Viewer API Test</title>
-  <script src="https://cdn.nira.app/sdk/latest/nira-sdk.js"></script>
 </head>
 
 <body style="margin:0; overflow:hidden;">
@@ -11,34 +10,12 @@
   <iframe
     id="niraviewer"
     style="width:100vw; height:100vh; border:none;"
-    src="https://app.nira.app/model/-0lmDLkGQpSjZn4Lyv3EVg">
+    src="https://nidaros.nira.app/a/-0lmDLkGQpSjZn4Lyv3EVg/1">
   </iframe>
 
   <script>
-    document.addEventListener("DOMContentLoaded", function () {
-
-      const iframe = document.getElementById("niraviewer");
-
-      iframe.addEventListener("load", function () {
-
-        const viewer = new NiraAPI.Viewer(iframe, {
-          enableCallouts: true,
-          enableObjectPicking: false
-        });
-
-        // 🔥 Nå skal dette fungere
-        viewer.on("callout_activated", function(event) {
-
-          console.log("CALLOUT UUID:", event.uuid);
-
-          if (window.FileMaker) {
-            FileMaker.PerformScript("Test_From_Nira", event.uuid);
-          }
-
-        });
-
-      });
-
+    window.addEventListener("message", function(event) {
+      console.log("MESSAGE FROM NIRA:", event.data);
     });
   </script>
 
