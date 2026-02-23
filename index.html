@@ -13,7 +13,7 @@
     src="https://nidaros.nira.app/a/-0lmDLkGQpSjZn4Lyv3EVg/1">
   </iframe>
 
-  <script>
+ <script>
 window.addEventListener("message", function(event) {
 
   if (!event.data) return;
@@ -23,6 +23,7 @@ window.addEventListener("message", function(event) {
   const logicalKey = meshName.replace(/_[^_]+$/, '');
 
   console.log("LOGICAL KEY:", logicalKey);
+  console.log("FileMaker exists:", typeof window.FileMaker);
 
   if (window.FileMaker) {
     FileMaker.PerformScript("Test_From_Nira", logicalKey);
@@ -33,8 +34,10 @@ window.addEventListener("message", function(event) {
 
 
 
+
 </body>
 </html>
+
 
 
 
