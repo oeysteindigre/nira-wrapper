@@ -20,11 +20,14 @@ let viewer;
 
 const iframe = document.getElementById("niraviewer");
 
-NiraViewer.create(iframe, {
-  suppressCalloutDialog: true
-}).then(v => {
+NiraViewer.create(iframe).then(v => {
 
   viewer = v;
+
+  // 🔥 Slå av standard callout-dialog
+  viewer.setViewOptions({
+    suppressCalloutDialog: true
+  });
 
   viewer.on("callout_activated", info => {
     if (window.FileMaker && FileMaker.PerformScript) {
@@ -40,8 +43,10 @@ function startCalloutMode() {
   }
 }
 
+
 </script>
 
 </body>
 </html>
+
 
