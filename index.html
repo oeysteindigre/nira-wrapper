@@ -42,25 +42,45 @@ viewer = new NiraAPI.Viewer(
     showNavigationTools: false,
     showMeasureTool: false,
     showCalloutsList: false,
-    showRenderModes: false
+    showRenderModes: false,
+    suppressCalloutDialog: true   // Må være her også
   }
 );
 
-// 🔥 Når asset er ferdig lastet
 viewer.on("asset_load_finish", function() {
 
-  // Fjern overgang / fokus-effekt
+  // Må settes ETTER load
   viewer.setSessionState({
     calloutTransitionStyle: "None",
     calloutViewStyle: "CalloutId"
   });
 
-  // Forsøk å undertrykke dialog
+  // Må settes ETTER session state
   viewer.setViewOptions({
     suppressCalloutDialog: true
   });
 
 });
+
+viewer.on("callout_activated", function(info) {
+
+  // FileMaker Pro
+  if (window.FileMaker && FileMaker.PerformScript) {
+    FileMaker.PerformScript("Test_From_nira", info.uuid);
+  }
+
+  // WebDirect (ett nivå opp)
+  else if (window.parent && window.parent.FileMaker) {
+    window.parent.FileMaker.PerformScript("Test_From_nira", info.uuid);
+  }
+
+  // WebDirect (to nivå opp – fallback)
+  else if (window.parent && window.parent.parent && window.parent.parent.FileMaker) {
+    window.parent.parent.FileMaker.PerformScript("Test_From_nira", info.uuid);
+  }
+
+});
+
 
 // 🔥 Send UUID til FileMaker
 viewer.on("callout_activated", function(info) {
@@ -90,4 +110,5 @@ function setTool(toolName) {
 
 </body>
 </html>
+
 
