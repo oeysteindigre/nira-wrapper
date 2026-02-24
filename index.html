@@ -2,22 +2,41 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 
-<title>Nira → FileMaker Integration</title>
+<title>Nira → FileMaker</title>
 
-<link rel="stylesheet" type="text/css" href="callout-ordered-listing.css">
+<style>
+html, body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  width: 100%;
+  overflow: hidden;
+}
+
+#container {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+}
+
+#niraviewer {
+  width: 100%;
+  height: 100%;
+  border: 0;
+}
+</style>
 
 <script src="https://sdk.nira.app/js/viewer.js"></script>
 
 <script>
-const $ = document.querySelector.bind(document);
-
 let niraViewer;
-let assetUuid;
 
 document.addEventListener("readystatechange", () => {
-  if (document.readyState != "interactive") return;
+  if (document.readyState !== "interactive") return;
 
   niraViewer = new NiraAPI.Viewer(
     document.getElementById("niraviewer"),
@@ -30,48 +49,15 @@ document.addEventListener("readystatechange", () => {
     }
   );
 
-  niraViewer.on("asset_load_finish", async (loadInfo) => {
-
-    $("#itempanel").style.display = "block";
-    assetUuid = loadInfo.assetUuid;
-
-    niraViewer.setSessionState({
-      calloutTransitionStyle: 'None',
-      calloutViewStyle: 'CalloutId'
-    });
-
-  });
-
-  niraViewer.on("asset_unload", () => {
-    $("#itempanel").style.display = "none";
-  });
-
-  // 🔥 HER ER FILEMAKER-KOBLINGEN
   niraViewer.on("callout_activated", (calloutInfo) => {
 
-    console.log("activated callout info:", calloutInfo);
-
     if (window.FileMaker && FileMaker.PerformScript) {
-
       FileMaker.PerformScript(
         "Test_From_nira",
         calloutInfo.uuid
       );
-
-    } else {
-
-      console.log("FileMaker object NOT available");
-
     }
 
-  });
-
-  niraViewer.on("callout_created", (calloutInfo) => {
-    console.log("created callout info:", calloutInfo);
-  });
-
-  niraViewer.on("callout_deleted", (calloutInfo) => {
-    console.log("deleted callout info:", calloutInfo);
   });
 
 });
@@ -80,23 +66,12 @@ document.addEventListener("readystatechange", () => {
 
 <body>
 
-<div id="itempanel">
-  <div id="itemlist">
-    <div id="itemlistitems"></div>
-  </div>
-  <div id="itemdetails">
-    <div id="itemDetailsHeader">Callout:</div>
-    <div id="itemDetailsId"></div>
-  </div>
+<div id="container">
+  <iframe
+    id="niraviewer"
+    src="https://nidaros.nira.app/g/y-93qFDYS2W-8ACrlqVj8A">
+  </iframe>
 </div>
-
-<iframe
-  id="niraviewer"
-  frameBorder="0"
-  loading="lazy"
-  class="niraIframe"
-  src="https://nidaros.nira.app/g/y-93qFDYS2W-8ACrlqVj8A">
-</iframe>
 
 </body>
 </html>
