@@ -84,16 +84,27 @@ viewer.on("callout_activated", function (info) {
 
 });
 
-// 🔥 Tool-styring fra FileMaker
-function setTool(toolName) {
+// 🔥 Select / navigasjon
+function activateSelectMode() {
 
   viewer.setSessionState({
-    navigationMode: toolName
+    navigationMode: "Orbit"
   });
 
 }
+
+// 🔥 Opprett ny markering
+function activateCalloutMode() {
+
+  viewer.setSessionState({
+    navigationMode: "Callout"
+  });
+
+}
+
 
 </script>
 
 </body>
 </html>
+
