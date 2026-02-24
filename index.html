@@ -2,30 +2,12 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-
-<title>Nira → FileMaker</title>
-
+<script src="https://developers.nira.app/js-sdk/latest/nira-sdk.js"></script>
 <style>
-html, body {
-  margin: 0;
-  padding: 0;
-  height: 100%;
-  width: 100%;
-  overflow: hidden;
-}
-
-#niraviewer {
-  width: 100%;
-  height: 100%;
-  border: 0;
-  display: block;
-}
+html,body{margin:0;height:100%;}
+iframe{width:100%;height:100%;border:0;}
 </style>
-
-<script src="https://sdk.nira.app/js/viewer.js"></script>
 </head>
-
 <body>
 
 <iframe
@@ -34,39 +16,25 @@ html, body {
 </iframe>
 
 <script>
+let viewer;
 
-let niraViewer;
+const iframe = document.getElementById("niraviewer");
 
-window.addEventListener("load", function () {
+NiraViewer.create(iframe).then(v => {
+  viewer = v;
 
-  niraViewer = new NiraAPI.Viewer(
-    document.getElementById("niraviewer"),
-    {
-      showNavigationTools: true,
-      showMeasureTool: false,
-      showCalloutsList: false,
-      showRenderModes: false,
-      suppressCalloutDialog: true
-    }
-  );
-
-  // 🔥 Tving resize etter init
-  setTimeout(function(){
-    window.dispatchEvent(new Event("resize"));
-  }, 300);
-
-  niraViewer.on("callout_activated", function(calloutInfo){
-
+  viewer.on("callout_activated", info => {
     if (window.FileMaker && FileMaker.PerformScript) {
-      FileMaker.PerformScript(
-        "Test_From_nira",
-        calloutInfo.uuid
-      );
+      FileMaker.PerformScript("Test_From_nira", info.uuid);
     }
-
   });
-
 });
+
+function startCalloutMode() {
+  if (viewer) {
+    viewer.setMeasureMode("callout");
+  }
+}
 </script>
 
 </body>
