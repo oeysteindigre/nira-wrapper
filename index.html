@@ -16,40 +16,54 @@ iframe {
 }
 </style>
 
-<script src="https://developers.nira.app/js-sdk/latest/nira-sdk.js"></script>
+<script src="https://sdk.nira.app/js/viewer.js"></script>
 </head>
 <body>
 
 <iframe
   id="niraviewer"
-  src="https://nidaros.nira.app/a/-0lmDLkGQpSjZn4Lyv3EVg/1">
+  src="https://nidaros.nira.app/g/y-93qFDYS2W-8ACrlqVj8A">
 </iframe>
 
 <script>
 let viewer;
 
-const iframe = document.getElementById("niraviewer");
-
-NiraViewer.create(iframe).then(v => {
-
-  viewer = v;
-
-  // 🔥 Fjern ALL Nira UI
-  viewer.setViewOptions({
+viewer = new NiraAPI.Viewer(
+  document.getElementById("niraviewer"),
+  {
     showNavigationTools: false,
     showMeasureTool: false,
     showCalloutsList: false,
     showRenderModes: false,
     suppressCalloutDialog: true
-  });
+  }
+);
 
-  viewer.on("callout_activated", info => {
-    if (window.FileMaker && FileMaker.PerformScript) {
-      FileMaker.PerformScript("Test_From_nira", info.uuid);
-    }
+// 🔥 Viktig: overstyr session state
+viewer.on("asset_load_finish", function() {
+
+  viewer.setSessionState({
+    calloutTransitionStyle: "None",
+    calloutViewStyle: "CalloutId"
   });
 
 });
+
+// UUID tilbake til FileMaker
+viewer.on("callout_activated", function(info) {
+  if (window.FileMaker && FileMaker.PerformScript) {
+    FileMaker.PerformScript("Test_From_nira", info.uuid);
+  }
+});
+
+// 🔥 Tool-styring fra FileMaker
+function setTool(toolName) {
+
+  viewer.setSessionState({
+    navigationMode: toolName
+  });
+
+}
 </script>
 
 </body>
