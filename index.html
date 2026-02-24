@@ -10,15 +10,15 @@
 
 <style>
 html, body {
-  margin:0;
-  padding:0;
-  height:100%;
-  overflow:hidden;
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  overflow: hidden;
 }
-iframe {
-  width:100%;
-  height:100%;
-  border:0;
+#niraviewer {
+  width: 100%;
+  height: 100%;
+  border: 0;
 }
 </style>
 
@@ -34,65 +34,52 @@ iframe {
 
 <script>
 
-let viewer;
-
-viewer = new NiraAPI.Viewer(
+let viewer = new NiraAPI.Viewer(
   document.getElementById("niraviewer"),
   {
     showNavigationTools: false,
     showMeasureTool: false,
     showCalloutsList: false,
     showRenderModes: false,
-    suppressCalloutDialog: true   // Må være her også
+    suppressCalloutDialog: true
   }
 );
 
-viewer.on("asset_load_finish", function() {
+// 🔥 Når asset er ferdig lastet
+viewer.on("asset_load_finish", function () {
 
-  // Må settes ETTER load
   viewer.setSessionState({
     calloutTransitionStyle: "None",
     calloutViewStyle: "CalloutId"
   });
 
-  // Må settes ETTER session state
-  viewer.setViewOptions({
-    suppressCalloutDialog: true
-  });
-
 });
 
-viewer.on("callout_activated", function(info) {
+// 🔥 UUID tilbake til FileMaker (Pro + WebDirect)
+viewer.on("callout_activated", function (info) {
 
-  // FileMaker Pro
-  if (window.FileMaker && FileMaker.PerformScript) {
-    FileMaker.PerformScript("Test_From_nira", info.uuid);
-  }
+  try {
 
-  // WebDirect (ett nivå opp)
-  else if (window.parent && window.parent.FileMaker) {
-    window.parent.FileMaker.PerformScript("Test_From_nira", info.uuid);
-  }
+    // FileMaker Pro
+    if (window.FileMaker && FileMaker.PerformScript) {
+      FileMaker.PerformScript("Test_From_nira", info.uuid);
+      return;
+    }
 
-  // WebDirect (to nivå opp – fallback)
-  else if (window.parent && window.parent.parent && window.parent.parent.FileMaker) {
-    window.parent.parent.FileMaker.PerformScript("Test_From_nira", info.uuid);
-  }
+    // WebDirect (PerformScriptWithOption)
+    if (window.FileMaker && FileMaker.PerformScriptWithOption) {
+      FileMaker.PerformScriptWithOption("Test_From_nira", info.uuid, 0);
+      return;
+    }
 
-});
+    // WebDirect nested iframe fallback
+    if (window.parent && window.parent.FileMaker) {
+      window.parent.FileMaker.PerformScriptWithOption("Test_From_nira", info.uuid, 0);
+      return;
+    }
 
-
-// 🔥 Send UUID til FileMaker
-viewer.on("callout_activated", function(info) {
-
-  // FileMaker Pro
-  if (window.FileMaker && FileMaker.PerformScript) {
-    FileMaker.PerformScript("Test_From_nira", info.uuid);
-  }
-
-  // WebDirect
-  else if (window.parent && window.parent.FileMaker) {
-    window.parent.FileMaker.PerformScript("Test_From_nira", info.uuid);
+  } catch (e) {
+    console.log("Bridge error:", e);
   }
 
 });
@@ -110,5 +97,3 @@ function setTool(toolName) {
 
 </body>
 </html>
-
-
