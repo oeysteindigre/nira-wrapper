@@ -20,7 +20,10 @@ let viewer;
 
 const iframe = document.getElementById("niraviewer");
 
-NiraViewer.create(iframe).then(v => {
+NiraViewer.create(iframe, {
+  suppressCalloutDialog: true
+}).then(v => {
+
   viewer = v;
 
   viewer.on("callout_activated", info => {
@@ -28,6 +31,7 @@ NiraViewer.create(iframe).then(v => {
       FileMaker.PerformScript("Test_From_nira", info.uuid);
     }
   });
+
 });
 
 function startCalloutMode() {
@@ -35,7 +39,9 @@ function startCalloutMode() {
     viewer.setMeasureMode("callout");
   }
 }
+
 </script>
 
 </body>
 </html>
+
