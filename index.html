@@ -84,27 +84,25 @@ viewer.on("callout_activated", function (info) {
 
 });
 
-// 🔥 Select / navigasjon
+// 🔵 Vanlig navigasjon / velg markering
 function activateSelectMode() {
 
-  viewer.setSessionState({
-    navigationMode: "Orbit"
-  });
+  viewer.setMeasureMode(null);
 
 }
 
-// 🔥 Opprett ny markering
+// 🟢 Opprett ny markering
 function activateCalloutMode() {
 
-  viewer.setSessionState({
-    navigationMode: "Callout"
-  });
+  viewer.setMeasureMode("Callout");
 
 }
+
 
 
 </script>
 
 </body>
 </html>
+
 
