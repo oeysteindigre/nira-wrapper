@@ -2,6 +2,12 @@
 <html>
 <head>
 <meta charset="UTF-8">
+
+<!-- 🔥 Deaktiver cache -->
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+<meta http-equiv="Pragma" content="no-cache" />
+<meta http-equiv="Expires" content="0" />
+
 <style>
 html, body {
   margin:0;
@@ -18,6 +24,7 @@ iframe {
 
 <script src="https://sdk.nira.app/js/viewer.js"></script>
 </head>
+
 <body>
 
 <iframe
@@ -26,6 +33,7 @@ iframe {
 </iframe>
 
 <script>
+
 let viewer;
 
 viewer = new NiraAPI.Viewer(
@@ -34,26 +42,33 @@ viewer = new NiraAPI.Viewer(
     showNavigationTools: false,
     showMeasureTool: false,
     showCalloutsList: false,
-    showRenderModes: false,
-    suppressCalloutDialog: true
+    showRenderModes: false
   }
 );
 
-// 🔥 Viktig: overstyr session state
+// 🔥 Når asset er ferdig lastet
 viewer.on("asset_load_finish", function() {
 
+  // Fjern overgang / fokus-effekt
   viewer.setSessionState({
     calloutTransitionStyle: "None",
     calloutViewStyle: "CalloutId"
   });
 
+  // Forsøk å undertrykke dialog
+  viewer.setViewOptions({
+    suppressCalloutDialog: true
+  });
+
 });
 
-// UUID tilbake til FileMaker
+// 🔥 Send UUID til FileMaker
 viewer.on("callout_activated", function(info) {
+
   if (window.FileMaker && FileMaker.PerformScript) {
     FileMaker.PerformScript("Test_From_nira", info.uuid);
   }
+
 });
 
 // 🔥 Tool-styring fra FileMaker
@@ -64,6 +79,7 @@ function setTool(toolName) {
   });
 
 }
+
 </script>
 
 </body>
