@@ -65,8 +65,14 @@ viewer.on("asset_load_finish", function() {
 // 🔥 Send UUID til FileMaker
 viewer.on("callout_activated", function(info) {
 
+  // FileMaker Pro
   if (window.FileMaker && FileMaker.PerformScript) {
     FileMaker.PerformScript("Test_From_nira", info.uuid);
+  }
+
+  // WebDirect
+  else if (window.parent && window.parent.FileMaker) {
+    window.parent.FileMaker.PerformScript("Test_From_nira", info.uuid);
   }
 
 });
@@ -84,3 +90,4 @@ function setTool(toolName) {
 
 </body>
 </html>
+
