@@ -2,17 +2,27 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<script src="https://developers.nira.app/js-sdk/latest/nira-sdk.js"></script>
 <style>
-html,body{margin:0;height:100%;}
-iframe{width:100%;height:100%;border:0;}
+html, body {
+  margin:0;
+  padding:0;
+  height:100%;
+  overflow:hidden;
+}
+iframe {
+  width:100%;
+  height:100%;
+  border:0;
+}
 </style>
+
+<script src="https://developers.nira.app/js-sdk/latest/nira-sdk.js"></script>
 </head>
 <body>
 
 <iframe
   id="niraviewer"
-  src="https://nidaros.nira.app/g/y-93qFDYS2W-8ACrlqVj8A">
+  src="https://nidaros.nira.app/a/-0lmDLkGQpSjZn4Lyv3EVg/1">
 </iframe>
 
 <script>
@@ -24,8 +34,12 @@ NiraViewer.create(iframe).then(v => {
 
   viewer = v;
 
-  // 🔥 Slå av standard callout-dialog
+  // 🔥 Fjern ALL Nira UI
   viewer.setViewOptions({
+    showNavigationTools: false,
+    showMeasureTool: false,
+    showCalloutsList: false,
+    showRenderModes: false,
     suppressCalloutDialog: true
   });
 
@@ -36,17 +50,7 @@ NiraViewer.create(iframe).then(v => {
   });
 
 });
-
-function startCalloutMode() {
-  if (viewer) {
-    viewer.setMeasureMode("callout");
-  }
-}
-
-
 </script>
 
 </body>
 </html>
-
-
