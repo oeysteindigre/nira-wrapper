@@ -84,19 +84,24 @@ viewer.on("callout_activated", function (info) {
 
 });
 
-// 🔵 Vanlig navigasjon / velg markering
+// 🔵 Velg / navigasjon
 function activateSelectMode() {
 
-  viewer.setMeasureMode(null);
+  viewer.setSessionState({
+    activeTool: null
+  });
 
 }
 
-// 🟢 Opprett ny markering
+// 🟢 Ny markering
 function activateCalloutMode() {
 
-  viewer.setMeasureMode("Callout");
+  viewer.setSessionState({
+    activeTool: "Callout"
+  });
 
 }
+
 
 
 
@@ -104,5 +109,6 @@ function activateCalloutMode() {
 
 </body>
 </html>
+
 
 
