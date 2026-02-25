@@ -50,10 +50,12 @@ viewer.on("asset_load_finish", function () {
 
   viewer.setSessionState({
     calloutTransitionStyle: "None",
-    calloutViewStyle: "CalloutId"
+    calloutViewStyle: "CalloutId",
+    showCalloutDialog: false
   });
 
 });
+
 
 // 🔥 UUID tilbake til FileMaker (Pro + WebDirect)
 viewer.on("callout_activated", function (info) {
@@ -109,6 +111,7 @@ function activateCalloutMode() {
 
 </body>
 </html>
+
 
 
 
