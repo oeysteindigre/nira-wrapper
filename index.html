@@ -3,7 +3,6 @@
 <head>
 <meta charset="UTF-8">
 
-<!-- 🔥 Deaktiver cache -->
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
 <meta http-equiv="Pragma" content="no-cache" />
 <meta http-equiv="Expires" content="0" />
@@ -41,98 +40,58 @@ let viewer = new NiraAPI.Viewer(
     showMeasureTool: true,
     showCalloutsList: true,
     showRenderModes: true,
-    suppressCalloutDialog: false
+    suppressCalloutDialog: true
   }
 );
 
-// 🔥 Når asset er ferdig lastet
-viewer.on("callout_activated", function (info, event) {
+/* ----------------------------------------
+   1️⃣ Når ny markering lages
+-----------------------------------------*/
+viewer.on("callout_created", function (info) {
 
-  if (event && event.preventDefault) {
-      event.preventDefault();
-  }
+  sendToFileMaker(info.uuid);
 
-  viewer.setSessionState({
-      activeTool: null,
-      showCalloutDialog: false
-  });
-
-  if (window.FileMaker && FileMaker.PerformScript) {
-      FileMaker.PerformScript("Test_From_nira", info);
-  }
-
-  return false;
 });
 
-
-
-
-// 🔥 UUID tilbake til FileMaker (Pro + WebDirect)
+/* ----------------------------------------
+   2️⃣ Når eksisterende markering klikkes
+-----------------------------------------*/
 viewer.on("callout_activated", function (info) {
+
+  sendToFileMaker(info.uuid);
+
+});
+
+/* ----------------------------------------
+   3️⃣ Felles bridge til FileMaker
+-----------------------------------------*/
+function sendToFileMaker(uuid) {
+
+  if (!uuid) return;
 
   try {
 
-    // FileMaker Pro
     if (window.FileMaker && FileMaker.PerformScript) {
-      FileMaker.PerformScript("Test_From_nira", info.uuid);
+      FileMaker.PerformScript("Test_From_nira", uuid);
       return;
     }
 
-    // WebDirect (PerformScriptWithOption)
     if (window.FileMaker && FileMaker.PerformScriptWithOption) {
-      FileMaker.PerformScriptWithOption("Test_From_nira", info.uuid, 0);
+      FileMaker.PerformScriptWithOption("Test_From_nira", uuid, 0);
       return;
     }
 
-    // WebDirect nested iframe fallback
     if (window.parent && window.parent.FileMaker) {
-      window.parent.FileMaker.PerformScriptWithOption("Test_From_nira", info.uuid, 0);
+      window.parent.FileMaker.PerformScriptWithOption("Test_From_nira", uuid, 0);
       return;
     }
 
   } catch (e) {
     console.log("Bridge error:", e);
   }
-
-});
-
-// 🔵 Velg / navigasjon
-function activateSelectMode() {
-
-  viewer.setSessionState({
-    activeTool: null
-  });
-
 }
-
-// 🟢 Ny markering
-function activateCalloutMode() {
-
-  viewer.setSessionState({
-    activeTool: "Callout"
-  });
-
-}
-
-
-
 
 </script>
 
 </body>
 </html>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
