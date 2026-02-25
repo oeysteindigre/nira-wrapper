@@ -37,11 +37,11 @@ html, body {
 let viewer = new NiraAPI.Viewer(
   document.getElementById("niraviewer"),
   {
-    showNavigationTools: false,
-    showMeasureTool: false,
-    showCalloutsList: false,
-    showRenderModes: false,
-    suppressCalloutDialog: true
+    showNavigationTools: true,
+    showMeasureTool: true,
+    showCalloutsList: true,
+    showRenderModes: true,
+    suppressCalloutDialog: false
   }
 );
 
@@ -109,6 +109,7 @@ function activateCalloutMode() {
 
 </body>
 </html>
+
 
 
 
