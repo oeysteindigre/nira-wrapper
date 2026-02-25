@@ -46,15 +46,24 @@ let viewer = new NiraAPI.Viewer(
 );
 
 // 🔥 Når asset er ferdig lastet
-viewer.on("asset_load_finish", function () {
+viewer.on("callout_activated", function (info, event) {
+
+  if (event && event.preventDefault) {
+      event.preventDefault();
+  }
 
   viewer.setSessionState({
-    activeTool: null,
-    calloutTransitionStyle: "None",
-    calloutViewStyle: "CalloutId"
+      activeTool: null,
+      showCalloutDialog: false
   });
 
+  if (window.FileMaker && FileMaker.PerformScript) {
+      FileMaker.PerformScript("Test_From_nira", info);
+  }
+
+  return false;
 });
+
 
 
 
@@ -112,6 +121,7 @@ function activateCalloutMode() {
 
 </body>
 </html>
+
 
 
 
