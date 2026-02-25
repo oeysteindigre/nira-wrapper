@@ -49,12 +49,13 @@ let viewer = new NiraAPI.Viewer(
 viewer.on("asset_load_finish", function () {
 
   viewer.setSessionState({
+    activeTool: null,
     calloutTransitionStyle: "None",
-    calloutViewStyle: "CalloutId",
-    showCalloutDialog: false
+    calloutViewStyle: "CalloutId"
   });
 
 });
+
 
 
 // 🔥 UUID tilbake til FileMaker (Pro + WebDirect)
@@ -111,6 +112,7 @@ function activateCalloutMode() {
 
 </body>
 </html>
+
 
 
 
