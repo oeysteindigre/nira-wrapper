@@ -44,44 +44,33 @@ let viewer = new NiraAPI.Viewer(
   }
 );
 
-/* ----------------------------------------
-   Les UUID fra URL (?select=...)
------------------------------------------*/
+/* --------------------------------------------------
+   🔵 FileMaker → Viewer
+-------------------------------------------------- */
 
-const params = new URLSearchParams(window.location.search);
-const selectUUID = params.get("select");
+function activateFromFileMaker(uuid) {
+  if (!uuid) return;
 
-/* ----------------------------------------
-   Når modellen er ferdig lastet
------------------------------------------*/
+  viewer.setSessionState({
+    activeCallout: uuid
+  });
+}
 
-viewer.on("asset_load_finish", function () {
-
-  if (selectUUID) {
-    viewer.activateCallout(selectUUID);
-  }
-
-});
-
-/* ----------------------------------------
-   Når ny markering lages
------------------------------------------*/
+/* --------------------------------------------------
+   🔵 Viewer → FileMaker
+-------------------------------------------------- */
 
 viewer.on("callout_created", function (info) {
   sendToFileMaker(info.uuid);
 });
 
-/* ----------------------------------------
-   Når eksisterende markering klikkes
------------------------------------------*/
-
 viewer.on("callout_activated", function (info) {
   sendToFileMaker(info.uuid);
 });
 
-/* ----------------------------------------
-   Felles bridge til FileMaker
------------------------------------------*/
+/* --------------------------------------------------
+   🔵 Bridge
+-------------------------------------------------- */
 
 function sendToFileMaker(uuid) {
 
