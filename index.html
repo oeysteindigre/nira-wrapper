@@ -33,6 +33,8 @@ html, body {
 
 <script>
 
+let viewerReady = false;
+
 let viewer = new NiraAPI.Viewer(
   document.getElementById("niraviewer"),
   {
@@ -45,32 +47,58 @@ let viewer = new NiraAPI.Viewer(
 );
 
 /* --------------------------------------------------
-   🔵 FileMaker → Viewer
+   Når modellen er ferdig lastet
+-------------------------------------------------- */
+
+viewer.on("asset_load_finish", function () {
+  viewerReady = true;
+});
+
+/* --------------------------------------------------
+   FileMaker → Viewer
 -------------------------------------------------- */
 
 function activateFromFileMaker(uuid) {
-  alert("UUID from FileMaker: " + uuid);
 
-   viewer.setSessionState({
-    activeCallout: uuid
-  });
+  if (!uuid) return;
+  if (!viewerReady) return;
+
+  try {
+    if (viewer.activateCallout) {
+      viewer.activateCallout(uuid);
+      return;
+    }
+
+    if (viewer.setSessionState) {
+      viewer.setSessionState({ activeCallout: uuid });
+      return;
+    }
+
+    console.log("No supported activation method found.");
+
+  } catch (e) {
+    console.log("Activation failed:", e);
+  }
 }
 
-
 /* --------------------------------------------------
-   🔵 Viewer → FileMaker
+   Viewer → FileMaker
 -------------------------------------------------- */
 
 viewer.on("callout_created", function (info) {
-  sendToFileMaker(info.uuid);
+  if (info && info.uuid) {
+    sendToFileMaker(info.uuid);
+  }
 });
 
 viewer.on("callout_activated", function (info) {
-  sendToFileMaker(info.uuid);
+  if (info && info.uuid) {
+    sendToFileMaker(info.uuid);
+  }
 });
 
 /* --------------------------------------------------
-   🔵 Bridge
+   Bridge til FileMaker
 -------------------------------------------------- */
 
 function sendToFileMaker(uuid) {
@@ -103,5 +131,3 @@ function sendToFileMaker(uuid) {
 
 </body>
 </html>
-
-
