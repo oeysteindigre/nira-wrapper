@@ -50,6 +50,10 @@ let viewer = new NiraAPI.Viewer(
 
 function activateFromFileMaker(uuid) {
   alert("UUID from FileMaker: " + uuid);
+
+   viewer.setSessionState({
+    activeCallout: uuid
+  });
 }
 
 
@@ -99,4 +103,5 @@ function sendToFileMaker(uuid) {
 
 </body>
 </html>
+
 
