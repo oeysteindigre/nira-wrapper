@@ -33,12 +33,16 @@ html, body {
 
 <script>
 
-/* --------------------------------------------------
+/* ==================================================
    STATE
--------------------------------------------------- */
+================================================== */
 
 let viewerReady = false;
 let pendingUuid = null;
+
+/* ==================================================
+   INIT VIEWER
+================================================== */
 
 let viewer = new NiraAPI.Viewer(
   document.getElementById("niraviewer"),
@@ -51,9 +55,9 @@ let viewer = new NiraAPI.Viewer(
   }
 );
 
-/* --------------------------------------------------
-   Når modellen er ferdig lastet
--------------------------------------------------- */
+/* ==================================================
+   MODEL READY
+================================================== */
 
 viewer.on("asset_load_finish", function () {
 
@@ -65,9 +69,9 @@ viewer.on("asset_load_finish", function () {
   }
 });
 
-/* --------------------------------------------------
-   Safe activation (støtter flere SDK-varianter)
--------------------------------------------------- */
+/* ==================================================
+   SAFE ACTIVATION (støtter flere SDK-varianter)
+================================================== */
 
 function activateCalloutSafe(uuid) {
 
@@ -95,9 +99,11 @@ function activateCalloutSafe(uuid) {
   }
 }
 
-/* --------------------------------------------------
+/* ==================================================
    FileMaker → Viewer
--------------------------------------------------- */
+   (Perform JavaScript in Web Viewer)
+   Function name MUST be: activateFromFileMaker
+================================================== */
 
 function activateFromFileMaker(uuid) {
 
@@ -111,9 +117,9 @@ function activateFromFileMaker(uuid) {
   activateCalloutSafe(uuid);
 }
 
-/* --------------------------------------------------
+/* ==================================================
    Viewer → FileMaker
--------------------------------------------------- */
+================================================== */
 
 viewer.on("callout_created", function (info) {
   if (info && info.uuid) {
@@ -127,9 +133,9 @@ viewer.on("callout_activated", function (info) {
   }
 });
 
-/* --------------------------------------------------
-   Bridge til FileMaker (Pro / Go / WebDirect)
--------------------------------------------------- */
+/* ==================================================
+   Bridge (Pro / Go / WebDirect safe)
+================================================== */
 
 function sendToFileMaker(uuid) {
 
@@ -137,24 +143,33 @@ function sendToFileMaker(uuid) {
 
   try {
 
-    if (typeof FileMaker !== "undefined" && FileMaker.PerformScript) {
-      FileMaker.PerformScript("Test_From_nira", uuid);
-      return;
+    if (typeof FileMaker !== "undefined") {
+
+      if (FileMaker.PerformScriptWithOption) {
+        FileMaker.PerformScriptWithOption("Test_From_nira", uuid, 0);
+        return;
+      }
+
+      if (FileMaker.PerformScript) {
+        FileMaker.PerformScript("Test_From_nira", uuid);
+        return;
+      }
+
     }
 
-    if (typeof FileMaker !== "undefined" && FileMaker.PerformScriptWithOption) {
-      FileMaker.PerformScriptWithOption("Test_From_nira", uuid, 0);
-      return;
-    }
-
-    if (window.top && window.top.FileMaker) {
-      window.top.FileMaker.PerformScript("Test_From_nira", uuid);
-      return;
-    }
+    console.log("FileMaker bridge not available");
 
   } catch (e) {
     console.log("Bridge error:", e);
   }
+}
+
+/* ==================================================
+   DEBUG (kan slettes senere)
+================================================== */
+
+function testPing() {
+  alert("JS reachable");
 }
 
 </script>
