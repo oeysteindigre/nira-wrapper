@@ -33,7 +33,12 @@ html, body {
 
 <script>
 
+/* --------------------------------------------------
+   STATE
+-------------------------------------------------- */
+
 let viewerReady = false;
+let pendingUuid = null;
 
 let viewer = new NiraAPI.Viewer(
   document.getElementById("niraviewer"),
@@ -51,19 +56,28 @@ let viewer = new NiraAPI.Viewer(
 -------------------------------------------------- */
 
 viewer.on("asset_load_finish", function () {
+
   viewerReady = true;
+
+  if (pendingUuid) {
+    activateCalloutSafe(pendingUuid);
+    pendingUuid = null;
+  }
 });
 
 /* --------------------------------------------------
-   FileMaker → Viewer
+   Safe activation (støtter flere SDK-varianter)
 -------------------------------------------------- */
 
-function activateFromFileMaker(uuid) {
-
-  if (!uuid) return;
-  if (!viewerReady) return;
+function activateCalloutSafe(uuid) {
 
   try {
+
+    if (viewer.activateCalloutLabelOrUuid) {
+      viewer.activateCalloutLabelOrUuid(uuid);
+      return;
+    }
+
     if (viewer.activateCallout) {
       viewer.activateCallout(uuid);
       return;
@@ -79,6 +93,22 @@ function activateFromFileMaker(uuid) {
   } catch (e) {
     console.log("Activation failed:", e);
   }
+}
+
+/* --------------------------------------------------
+   FileMaker → Viewer
+-------------------------------------------------- */
+
+function activateFromFileMaker(uuid) {
+
+  if (!uuid) return;
+
+  if (!viewerReady) {
+    pendingUuid = uuid;
+    return;
+  }
+
+  activateCalloutSafe(uuid);
 }
 
 /* --------------------------------------------------
@@ -98,7 +128,7 @@ viewer.on("callout_activated", function (info) {
 });
 
 /* --------------------------------------------------
-   Bridge til FileMaker
+   Bridge til FileMaker (Pro / Go / WebDirect)
 -------------------------------------------------- */
 
 function sendToFileMaker(uuid) {
@@ -107,18 +137,18 @@ function sendToFileMaker(uuid) {
 
   try {
 
-    if (window.FileMaker && FileMaker.PerformScript) {
+    if (typeof FileMaker !== "undefined" && FileMaker.PerformScript) {
       FileMaker.PerformScript("Test_From_nira", uuid);
       return;
     }
 
-    if (window.FileMaker && FileMaker.PerformScriptWithOption) {
+    if (typeof FileMaker !== "undefined" && FileMaker.PerformScriptWithOption) {
       FileMaker.PerformScriptWithOption("Test_From_nira", uuid, 0);
       return;
     }
 
-    if (window.parent && window.parent.FileMaker) {
-      window.parent.FileMaker.PerformScriptWithOption("Test_From_nira", uuid, 0);
+    if (window.top && window.top.FileMaker) {
+      window.top.FileMaker.PerformScript("Test_From_nira", uuid);
       return;
     }
 
@@ -131,4 +161,3 @@ function sendToFileMaker(uuid) {
 
 </body>
 </html>
-
