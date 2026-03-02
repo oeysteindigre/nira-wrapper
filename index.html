@@ -2,7 +2,10 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+<meta http-equiv="Pragma" content="no-cache" />
+<meta http-equiv="Expires" content="0" />
 
 <style>
 html, body {
@@ -11,7 +14,6 @@ html, body {
   height: 100%;
   overflow: hidden;
 }
-
 #niraviewer {
   width: 100%;
   height: 100%;
@@ -31,74 +33,97 @@ html, body {
 
 <script>
 
-let viewer;
 let viewerReady = false;
-let pendingUuid = null;
 
-const iframe = document.getElementById("niraviewer");
-
-iframe.addEventListener("load", function() {
-
-  viewer = new NiraAPI.Viewer(iframe, {
+let viewer = new NiraAPI.Viewer(
+  document.getElementById("niraviewer"),
+  {
     showNavigationTools: true,
     showMeasureTool: true,
     showCalloutsList: true,
     showRenderModes: true,
     suppressCalloutDialog: true
-  });
+  }
+);
 
-  /* --- Først når asset er ferdig --- */
+/* --------------------------------------------------
+   Når modellen er ferdig lastet
+-------------------------------------------------- */
 
-  viewer.on("asset_load_finish", function () {
-
-    viewerReady = true;
-
-    /* Event listeners registreres her */
-    viewer.on("callout_created", handleCallout);
-    viewer.on("callout_activated", handleCallout);
-    viewer.on("callout_deleted", handleDelete);
-
-    if (pendingUuid) {
-      viewer.activateCalloutLabelOrUuid(pendingUuid);
-      pendingUuid = null;
-    }
-
-  });
-
+viewer.on("asset_load_finish", function () {
+  viewerReady = true;
 });
 
-function handleCallout(info) {
-  if (info && info.uuid) {
-    sendToFileMaker(info.uuid);
-  }
-}
-
-function handleDelete(info) {
-  if (info && info.uuid) {
-    sendToFileMaker("deleted|" + info.uuid);
-  }
-}
+/* --------------------------------------------------
+   FileMaker → Viewer
+-------------------------------------------------- */
 
 function activateFromFileMaker(uuid) {
 
   if (!uuid) return;
-
-  if (!viewerReady) {
-    pendingUuid = uuid;
-    return;
-  }
-
-  viewer.activateCalloutLabelOrUuid(uuid);
-}
-
-function sendToFileMaker(payload) {
+  if (!viewerReady) return;
 
   try {
-    if (window.FileMaker && FileMaker.PerformScriptWithOption) {
-      FileMaker.PerformScriptWithOption("Test_From_nira", payload, 0);
+    if (viewer.activateCallout) {
+      viewer.activateCallout(uuid);
+      return;
     }
+
+    if (viewer.setSessionState) {
+      viewer.setSessionState({ activeCallout: uuid });
+      return;
+    }
+
+    console.log("No supported activation method found.");
+
   } catch (e) {
-    console.log(e);
+    console.log("Activation failed:", e);
+  }
+}
+
+/* --------------------------------------------------
+   Viewer → FileMaker
+-------------------------------------------------- */
+
+viewer.on("callout_created", function (info) {
+  if (info && info.uuid) {
+    sendToFileMaker(info.uuid);
+  }
+});
+
+viewer.on("callout_activated", function (info) {
+  if (info && info.uuid) {
+    sendToFileMaker(info.uuid);
+  }
+});
+
+/* --------------------------------------------------
+   Bridge til FileMaker
+-------------------------------------------------- */
+
+function sendToFileMaker(uuid) {
+
+  if (!uuid) return;
+
+  try {
+
+    if (window.FileMaker && FileMaker.PerformScript) {
+      FileMaker.PerformScript("Test_From_nira", uuid);
+      return;
+    }
+
+    if (window.FileMaker && FileMaker.PerformScriptWithOption) {
+      FileMaker.PerformScriptWithOption("Test_From_nira", uuid, 0);
+      return;
+    }
+
+    if (window.parent && window.parent.FileMaker) {
+      window.parent.FileMaker.PerformScriptWithOption("Test_From_nira", uuid, 0);
+      return;
+    }
+
+  } catch (e) {
+    console.log("Bridge error:", e);
   }
 }
 
@@ -106,3 +131,4 @@ function sendToFileMaker(payload) {
 
 </body>
 </html>
+
