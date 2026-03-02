@@ -7,17 +7,22 @@
 <meta http-equiv="Pragma" content="no-cache" />
 <meta http-equiv="Expires" content="0" />
 
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+
 <style>
 html, body {
   margin: 0;
   padding: 0;
   height: 100%;
   overflow: hidden;
+  touch-action: none; /* viktig for iPad */
 }
+
 #niraviewer {
   width: 100%;
   height: 100%;
   border: 0;
+  touch-action: none; /* hindrer gesture-conflict */
 }
 </style>
 
@@ -26,18 +31,22 @@ html, body {
 
 <body>
 
-<iframe
-  id="niraviewer"
-  src="https://nidaros.nira.app/g/y-93qFDYS2W-8ACrlqVj8A">
-</iframe>
+<iframe id="niraviewer"></iframe>
 
 <script>
 
+/* --------------------------------------------------
+   INIT
+-------------------------------------------------- */
+
 let viewerReady = false;
+let pendingUuid = null;
 
 let viewer = new NiraAPI.Viewer(
   document.getElementById("niraviewer"),
   {
+    url: "https://nidaros.nira.app/g/y-93qFDYS2W-8ACrlqVj8A",
+
     showNavigationTools: true,
     showMeasureTool: true,
     showCalloutsList: true,
@@ -47,11 +56,16 @@ let viewer = new NiraAPI.Viewer(
 );
 
 /* --------------------------------------------------
-   Når modellen er ferdig lastet
+   MODEL READY
 -------------------------------------------------- */
 
 viewer.on("asset_load_finish", function () {
   viewerReady = true;
+
+  if (pendingUuid) {
+    viewer.activateCalloutLabelOrUuid(pendingUuid);
+    pendingUuid = null;
+  }
 });
 
 /* --------------------------------------------------
@@ -61,21 +75,14 @@ viewer.on("asset_load_finish", function () {
 function activateFromFileMaker(uuid) {
 
   if (!uuid) return;
-  if (!viewerReady) return;
+
+  if (!viewerReady) {
+    pendingUuid = uuid;
+    return;
+  }
 
   try {
-    if (viewer.activateCallout) {
-      viewer.activateCallout(uuid);
-      return;
-    }
-
-    if (viewer.setSessionState) {
-      viewer.setSessionState({ activeCallout: uuid });
-      return;
-    }
-
-    console.log("No supported activation method found.");
-
+    viewer.activateCalloutLabelOrUuid(uuid);
   } catch (e) {
     console.log("Activation failed:", e);
   }
@@ -87,13 +94,19 @@ function activateFromFileMaker(uuid) {
 
 viewer.on("callout_created", function (info) {
   if (info && info.uuid) {
-    sendToFileMaker(info.uuid);
+    sendToFileMaker("created|" + info.uuid);
   }
 });
 
 viewer.on("callout_activated", function (info) {
   if (info && info.uuid) {
-    sendToFileMaker(info.uuid);
+    sendToFileMaker("activated|" + info.uuid);
+  }
+});
+
+viewer.on("callout_deleted", function (info) {
+  if (info && info.uuid) {
+    sendToFileMaker("deleted|" + info.uuid);
   }
 });
 
@@ -101,24 +114,24 @@ viewer.on("callout_activated", function (info) {
    Bridge til FileMaker
 -------------------------------------------------- */
 
-function sendToFileMaker(uuid) {
+function sendToFileMaker(payload) {
 
-  if (!uuid) return;
+  if (!payload) return;
 
   try {
 
     if (window.FileMaker && FileMaker.PerformScript) {
-      FileMaker.PerformScript("Test_From_nira", uuid);
+      FileMaker.PerformScript("Test_From_nira", payload);
       return;
     }
 
     if (window.FileMaker && FileMaker.PerformScriptWithOption) {
-      FileMaker.PerformScriptWithOption("Test_From_nira", uuid, 0);
+      FileMaker.PerformScriptWithOption("Test_From_nira", payload, 0);
       return;
     }
 
     if (window.parent && window.parent.FileMaker) {
-      window.parent.FileMaker.PerformScriptWithOption("Test_From_nira", uuid, 0);
+      window.parent.FileMaker.PerformScriptWithOption("Test_From_nira", payload, 0);
       return;
     }
 
