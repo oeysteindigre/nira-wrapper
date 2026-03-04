@@ -3,16 +3,22 @@
 <head>
 <meta charset="UTF-8">
 
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+<meta http-equiv="Pragma" content="no-cache" />
+<meta http-equiv="Expires" content="0" />
+
 <style>
 html, body {
-  margin:0;
-  padding:0;
-  height:100%;
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  overflow: hidden;
 }
 
-#viewer {
-  width:100%;
-  height:100%;
+#niraviewer {
+  width: 100%;
+  height: 100%;
+  border: 0;
 }
 </style>
 
@@ -22,33 +28,224 @@ html, body {
 
 <body>
 
-<div id="viewer"></div>
+<iframe
+  id="niraviewer"
+  src="https://nidaros.nira.app/g/y-93qFDYS2W-8ACrlqVj8A">
+</iframe>
 
 <script>
 
-let viewer;
+/* ==================================================
+   STATE
+================================================== */
 
-async function startViewer(){
+let viewerReady = false;
+let pendingUuid = null;
+let allCalloutIds = [];
 
-  console.log("starting sdk viewer");
 
-  viewer = await NiraViewer.create({
+/* ==================================================
+   INIT VIEWER
+================================================== */
 
-    element: document.getElementById("viewer"),
+let viewer = new NiraAPI.Viewer(
+  document.getElementById("niraviewer"),
+  {
+    showNavigationTools: true,
+    showMeasureTool: true,
+    showCalloutsList: true,
+    showRenderModes: true,
+    suppressCalloutDialog: true
+  }
+);
 
-    project: "nidaros",
+/* ==================================================
+   MODEL READY
+================================================== */
 
-    asset: "y-93qFDYS2W-8ACrlqVj8A"
+viewer.on("asset_load_finish", function () {
 
+  viewerReady = true;
+
+  if (pendingUuid) {
+    activateCalloutSafe(pendingUuid);
+    pendingUuid = null;
+  }
+
+  viewer.getCallouts().then(function(callouts){
+    allCalloutIds = callouts.map(c => c.uuid);
   });
 
-  console.log("viewer loaded");
+});
+
+
+/* ==================================================
+   SAFE CALLOUT ACTIVATION
+================================================== */
+
+function activateCalloutSafe(uuid) {
+
+  try {
+
+    if (viewer.activateCalloutLabelOrUuid) {
+      viewer.activateCalloutLabelOrUuid(uuid);
+      return;
+    }
+
+    if (viewer.activateCallout) {
+      viewer.activateCallout(uuid);
+      return;
+    }
+
+    if (viewer.setSessionState) {
+      viewer.setSessionState({ activeCallout: uuid });
+      return;
+    }
+
+    console.log("No supported activation method found.");
+
+  } catch (e) {
+    console.log("Activation failed:", e);
+  }
+}
+
+/* ==================================================
+   FileMaker → Viewer
+   activate single callout
+================================================== */
+
+function activateFromFileMaker(uuid) {
+
+  if (!uuid) return;
+
+  if (!viewerReady) {
+    pendingUuid = uuid;
+    return;
+  }
+
+  activateCalloutSafe(uuid);
+}
+
+/* ==================================================
+   FILTER CALLOUTS
+   FileMaker sender liste med UUID
+================================================== */
+
+function filterCallouts(uuidList){
+
+  const ids = JSON.parse(uuidList);
+
+  if (!viewerReady) return;
+
+  let i = 0;
+
+  function activateNext(){
+
+    if (i >= ids.length) return;
+
+    activateCalloutSafe(ids[i]);
+
+    i++;
+
+    setTimeout(activateNext, 400);
+
+  }
+
+  activateNext();
 
 }
 
-startViewer();
+
+
+/* ==================================================
+   SHOW ALL CALLOUTS
+================================================== */
+
+function showAllCallouts(){
+
+  if (!viewerReady) return;
+
+  viewer.getCallouts().then(function(callouts){
+
+    callouts.forEach(function(c){
+      viewer.updateCallout(c.uuid, { visible:true });
+    });
+
+  });
+
+}
+
+/* ==================================================
+   Viewer → FileMaker
+================================================== */
+
+viewer.on("callout_created", function (info) {
+
+  if (info && info.uuid) {
+    sendToFileMaker(info.uuid);
+  }
+
+});
+
+viewer.on("callout_activated", function (info) {
+
+  if (info && info.uuid) {
+    sendToFileMaker(info.uuid);
+  }
+
+});
+
+/* ==================================================
+   Bridge (Pro / Go / WebDirect safe)
+================================================== */
+
+function sendToFileMaker(uuid) {
+
+  if (!uuid) return;
+
+  try {
+
+    if (typeof FileMaker !== "undefined") {
+
+      if (FileMaker.PerformScriptWithOption) {
+        FileMaker.PerformScriptWithOption("Test_From_nira", uuid, 0);
+        return;
+      }
+
+      if (FileMaker.PerformScript) {
+        FileMaker.PerformScript("Test_From_nira", uuid);
+        return;
+      }
+
+    }
+
+    console.log("FileMaker bridge not available");
+
+  } catch (e) {
+    console.log("Bridge error:", e);
+  }
+
+}
+
+/* ==================================================
+   DEBUG
+================================================== */
+
+function testPing() {
+  alert("JS reachable");
+}
 
 </script>
 
 </body>
 </html>
+
+
+
+
+
+
+
+
+
+
