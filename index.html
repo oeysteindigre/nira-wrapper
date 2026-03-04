@@ -124,11 +124,28 @@ function activateFromFileMaker(uuid) {
    FileMaker sender liste med UUID
 ================================================== */
 
+
 function filterCallouts(uuidList){
 
   const ids = JSON.parse(uuidList);
 
-  alert("Received " + ids.length + " callouts");
+  if (!viewerReady) return;
+
+  let i = 0;
+
+  function activateNext(){
+
+    if (i >= ids.length) return;
+
+    activateCalloutSafe(ids[i]);
+
+    i++;
+
+    setTimeout(activateNext, 600);
+
+  }
+
+  activateNext();
 
 }
 
@@ -217,6 +234,7 @@ function testPing() {
 
 </body>
 </html>
+
 
 
 
