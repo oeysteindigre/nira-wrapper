@@ -124,7 +124,7 @@ function activateFromFileMaker(uuid) {
    FileMaker sender liste med UUID
 ================================================== */
 
-function filterCallouts(uuidList) {
+function filterCallouts(uuidList){
 
   if (!viewerReady) return;
 
@@ -134,16 +134,16 @@ function filterCallouts(uuidList) {
       uuidList = JSON.parse(uuidList);
     }
 
-    viewer.getCallouts().then(function(callouts){
+    /* skjul alle callouts */
+    viewer.setSessionState({
+      calloutsVisible: false
+    });
 
-      callouts.forEach(function(c){
+    /* vis de vi vil ha */
+    uuidList.forEach(function(uuid){
 
-        if (uuidList.includes(c.uuid)) {
-          viewer.updateCallout(c.uuid, { visible: true });
-        } else {
-          viewer.updateCallout(c.uuid, { visible: false });
-        }
-
+      viewer.updateCallout(uuid,{
+        visible:true
       });
 
     });
@@ -153,6 +153,7 @@ function filterCallouts(uuidList) {
   }
 
 }
+
 
 /* ==================================================
    SHOW ALL CALLOUTS
@@ -236,3 +237,4 @@ function testPing() {
 
 </body>
 </html>
+
