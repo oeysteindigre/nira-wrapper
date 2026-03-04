@@ -131,23 +131,22 @@ function filterCallouts(uuidList){
 
   if (!viewerReady) return;
 
-  let i = 0;
+  viewer.getCallouts().then(function(callouts){
 
-  function activateNext(){
+    callouts.forEach(function(c){
 
-    if (i >= ids.length) return;
+      if (ids.includes(c.uuid)){
+        viewer.updateCallout(c.uuid,{ visible:true });
+      } else {
+        viewer.updateCallout(c.uuid,{ visible:false });
+      }
 
-    activateCalloutSafe(ids[i]);
+    });
 
-    i++;
-
-    setTimeout(activateNext, 600);
-
-  }
-
-  activateNext();
+  });
 
 }
+
 
 
 
@@ -234,6 +233,7 @@ function testPing() {
 
 </body>
 </html>
+
 
 
 
