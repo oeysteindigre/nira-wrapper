@@ -73,11 +73,8 @@ viewer.on("asset_load_finish", function () {
   }
 
   viewer.getCallouts().then(function(callouts){
-
-  alert(JSON.stringify(callouts));
-
+    allCalloutIds = callouts.map(c => c.uuid);
   });
-
 
 });
 
@@ -182,12 +179,13 @@ function showAllCallouts(){
    Viewer → FileMaker
 ================================================== */
 
-viewer.on("callout_created", function(info){
+viewer.on("callout_created", function (info) {
 
-  alert(JSON.stringify(info));
+  if (info && info.uuid) {
+    sendToFileMaker(info.uuid);
+  }
 
 });
-
 
 viewer.on("callout_activated", function (info) {
 
@@ -241,7 +239,6 @@ function testPing() {
 
 </body>
 </html>
-
 
 
 
