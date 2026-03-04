@@ -44,13 +44,15 @@ INIT VIEWER (SDK VERSION)
 
 async function startViewer(){
 
- alert("viewer starting");
+  alert("viewer starting");
 
- viewer = await NiraViewer.create({
+  viewer = await NiraViewer.create({
 
-  element: document.getElementById("viewer"),
+    element: document.getElementById("viewer"),
 
-  asset: "y-93qFDYS2W-8ACrlqVj8A",
+    project: "nidaros",
+
+    asset: "y-93qFDYS2W-8ACrlqVj8A",
 
     showNavigationTools:true,
     showMeasureTool:true,
@@ -64,6 +66,7 @@ async function startViewer(){
 }
 
 startViewer()
+
 
 /* ================================
 ACTIVATE CALLOUT
@@ -136,5 +139,6 @@ function sendToFileMaker(uuid){
 
 </body>
 </html>
+
 
 
