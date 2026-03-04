@@ -9,16 +9,15 @@
 
 <style>
 html, body {
-  margin: 0;
-  padding: 0;
-  height: 100%;
-  overflow: hidden;
+  margin:0;
+  padding:0;
+  height:100%;
+  overflow:hidden;
 }
 
-#niraviewer {
-  width: 100%;
-  height: 100%;
-  border: 0;
+#viewer {
+  width:100%;
+  height:100%;
 }
 </style>
 
@@ -28,225 +27,110 @@ html, body {
 
 <body>
 
-<iframe
-  id="niraviewer"
-  src="https://nidaros.nira.app/g/y-93qFDYS2W-8ACrlqVj8A">
-</iframe>
+<div id="viewer"></div>
 
 <script>
 
-/* ==================================================
-   STATE
-================================================== */
+/* ================================
+STATE
+================================ */
 
-let viewerReady = false;
-let pendingUuid = null;
-let allCalloutIds = [];
+let viewer
+let viewerReady = false
 
+/* ================================
+INIT VIEWER (SDK VERSION)
+================================ */
 
-/* ==================================================
-   INIT VIEWER
-================================================== */
+async function startViewer(){
 
-let viewer = new NiraAPI.Viewer(
-  document.getElementById("niraviewer"),
-  {
-    showNavigationTools: true,
-    showMeasureTool: true,
-    showCalloutsList: true,
-    showRenderModes: true,
-    suppressCalloutDialog: true
-  }
-);
+  viewer = await NiraViewer.create({
 
-/* ==================================================
-   MODEL READY
-================================================== */
+    element: document.getElementById("viewer"),
 
-viewer.on("asset_load_finish", function () {
+    url: "https://nidaros.nira.app/g/y-93qFDYS2W-8ACrlqVj8A",
 
-  viewerReady = true;
+    showNavigationTools:true,
+    showMeasureTool:true,
+    showCalloutsList:true,
+    showRenderModes:true
 
-  if (pendingUuid) {
-    activateCalloutSafe(pendingUuid);
-    pendingUuid = null;
-  }
+  })
 
-  viewer.getCallouts().then(function(callouts){
-    allCalloutIds = callouts.map(c => c.uuid);
-  });
+  viewerReady = true
 
-});
+}
 
+startViewer()
 
-/* ==================================================
-   SAFE CALLOUT ACTIVATION
-================================================== */
+/* ================================
+ACTIVATE CALLOUT
+================================ */
 
-function activateCalloutSafe(uuid) {
+function activateFromFileMaker(uuid){
 
-  try {
+  if(!viewerReady) return
 
-    if (viewer.activateCalloutLabelOrUuid) {
-      viewer.activateCalloutLabelOrUuid(uuid);
-      return;
+  viewer.activateCalloutLabelOrUuid(uuid)
+
+}
+
+/* ================================
+FILTER CALLOUTS
+================================ */
+
+async function filterCallouts(uuidList){
+
+  const ids = JSON.parse(uuidList)
+
+  if(!viewerReady) return
+
+  const callouts = await viewer.getCallouts()
+
+  callouts.forEach(c => {
+
+    if(ids.includes(c.uuid)){
+      viewer.updateCallout(c.uuid,{visible:true})
+    }
+    else{
+      viewer.updateCallout(c.uuid,{visible:false})
     }
 
-    if (viewer.activateCallout) {
-      viewer.activateCallout(uuid);
-      return;
-    }
-
-    if (viewer.setSessionState) {
-      viewer.setSessionState({ activeCallout: uuid });
-      return;
-    }
-
-    console.log("No supported activation method found.");
-
-  } catch (e) {
-    console.log("Activation failed:", e);
-  }
-}
-
-/* ==================================================
-   FileMaker → Viewer
-   activate single callout
-================================================== */
-
-function activateFromFileMaker(uuid) {
-
-  if (!uuid) return;
-
-  if (!viewerReady) {
-    pendingUuid = uuid;
-    return;
-  }
-
-  activateCalloutSafe(uuid);
-}
-
-/* ==================================================
-   FILTER CALLOUTS
-   FileMaker sender liste med UUID
-================================================== */
-
-function filterCallouts(uuidList){
-
-  const ids = JSON.parse(uuidList);
-
-  if (!viewerReady) return;
-
-  let i = 0;
-
-  function activateNext(){
-
-    if (i >= ids.length) return;
-
-    activateCalloutSafe(ids[i]);
-
-    i++;
-
-    setTimeout(activateNext, 400);
-
-  }
-
-  activateNext();
+  })
 
 }
 
+/* ================================
+SEND EVENTS BACK TO FILEMAKER
+================================ */
 
+function sendToFileMaker(uuid){
 
-/* ==================================================
-   SHOW ALL CALLOUTS
-================================================== */
+  if(!uuid) return
 
-function showAllCallouts(){
+  try{
 
-  if (!viewerReady) return;
+    if(typeof FileMaker !== "undefined"){
 
-  viewer.getCallouts().then(function(callouts){
-
-    callouts.forEach(function(c){
-      viewer.updateCallout(c.uuid, { visible:true });
-    });
-
-  });
-
-}
-
-/* ==================================================
-   Viewer → FileMaker
-================================================== */
-
-viewer.on("callout_created", function (info) {
-
-  if (info && info.uuid) {
-    sendToFileMaker(info.uuid);
-  }
-
-});
-
-viewer.on("callout_activated", function (info) {
-
-  if (info && info.uuid) {
-    sendToFileMaker(info.uuid);
-  }
-
-});
-
-/* ==================================================
-   Bridge (Pro / Go / WebDirect safe)
-================================================== */
-
-function sendToFileMaker(uuid) {
-
-  if (!uuid) return;
-
-  try {
-
-    if (typeof FileMaker !== "undefined") {
-
-      if (FileMaker.PerformScriptWithOption) {
-        FileMaker.PerformScriptWithOption("Test_From_nira", uuid, 0);
-        return;
+      if(FileMaker.PerformScriptWithOption){
+        FileMaker.PerformScriptWithOption("Test_From_nira",uuid,0)
+        return
       }
 
-      if (FileMaker.PerformScript) {
-        FileMaker.PerformScript("Test_From_nira", uuid);
-        return;
+      if(FileMaker.PerformScript){
+        FileMaker.PerformScript("Test_From_nira",uuid)
+        return
       }
 
     }
 
-    console.log("FileMaker bridge not available");
-
-  } catch (e) {
-    console.log("Bridge error:", e);
+  }catch(e){
+    console.log(e)
   }
 
-}
-
-/* ==================================================
-   DEBUG
-================================================== */
-
-function testPing() {
-  alert("JS reachable");
 }
 
 </script>
 
 </body>
 </html>
-
-
-
-
-
-
-
-
-
-
-
