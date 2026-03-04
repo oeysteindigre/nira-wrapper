@@ -126,9 +126,12 @@ function activateFromFileMaker(uuid) {
 
 function filterCallouts(uuidList){
 
-  alert(uuidList);
+  const ids = JSON.parse(uuidList);
+
+  alert("Received " + ids.length + " callouts");
 
 }
+
 
 
 
@@ -214,6 +217,7 @@ function testPing() {
 
 </body>
 </html>
+
 
 
 
