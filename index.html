@@ -179,13 +179,12 @@ function showAllCallouts(){
    Viewer → FileMaker
 ================================================== */
 
-viewer.on("callout_created", function (info) {
+viewer.on("callout_created", function(info){
 
-  if (info && info.uuid) {
-    sendToFileMaker(info.uuid);
-  }
+  alert(JSON.stringify(info));
 
 });
+
 
 viewer.on("callout_activated", function (info) {
 
