@@ -153,6 +153,12 @@ function filterCallouts(uuidList){
   } catch(e) {
     console.log("Filter error:", e);
   }
+  function filterCallouts(uuidList){
+   console.log("filter triggered");
+}
+
+window.filterCallouts = filterCallouts;
+
 
 }
 
@@ -239,5 +245,6 @@ function testPing() {
 
 </body>
 </html>
+
 
 
