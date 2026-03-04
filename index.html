@@ -41,6 +41,8 @@ html, body {
 
 let viewerReady = false;
 let pendingUuid = null;
+let allCalloutIds = [];
+
 
 /* ==================================================
    INIT VIEWER
@@ -70,7 +72,12 @@ viewer.on("asset_load_finish", function () {
     pendingUuid = null;
   }
 
+  viewer.getCallouts().then(function(callouts){
+    allCalloutIds = callouts.map(c => c.uuid);
+  });
+
 });
+
 
 /* ==================================================
    SAFE CALLOUT ACTIVATION
@@ -124,29 +131,23 @@ function activateFromFileMaker(uuid) {
    FileMaker sender liste med UUID
 ================================================== */
 
-
 function filterCallouts(uuidList){
 
   const ids = JSON.parse(uuidList);
 
   if (!viewerReady) return;
 
-  viewer.getCallouts().then(function(callouts){
+  allCalloutIds.forEach(function(id){
 
-    callouts.forEach(function(c){
-
-      if (ids.includes(c.uuid)){
-        viewer.updateCallout(c.uuid,{ visible:true });
-      } else {
-        viewer.updateCallout(c.uuid,{ visible:false });
-      }
-
-    });
+    if (ids.includes(id)){
+      viewer.updateCallout(id,{visible:true});
+    } else {
+      viewer.updateCallout(id,{visible:false});
+    }
 
   });
 
 }
-
 
 
 
@@ -233,6 +234,7 @@ function testPing() {
 
 </body>
 </html>
+
 
 
 
