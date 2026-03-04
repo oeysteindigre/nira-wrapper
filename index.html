@@ -44,6 +44,8 @@ INIT VIEWER (SDK VERSION)
 
 async function startViewer(){
 
+ alert("viewer starting");
+
  viewer = await NiraViewer.create({
 
   element: document.getElementById("viewer"),
@@ -134,4 +136,5 @@ function sendToFileMaker(uuid){
 
 </body>
 </html>
+
 
