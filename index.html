@@ -137,17 +137,21 @@ function filterCallouts(uuidList){
 
   if (!viewerReady) return;
 
-  viewer.getCallouts().then(function(callouts){
+  let i = 0;
 
-    callouts.forEach(function(c){
+  function activateNext(){
 
-      if (!ids.includes(c.uuid)){
-        viewer.deleteCallout(c.uuid);
-      }
+    if (i >= ids.length) return;
 
-    });
+    activateCalloutSafe(ids[i]);
 
-  });
+    i++;
+
+    setTimeout(activateNext, 400);
+
+  }
+
+  activateNext();
 
 }
 
@@ -235,6 +239,7 @@ function testPing() {
 
 </body>
 </html>
+
 
 
 
