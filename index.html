@@ -73,8 +73,11 @@ viewer.on("asset_load_finish", function () {
   }
 
   viewer.getCallouts().then(function(callouts){
-    allCalloutIds = callouts.map(c => c.uuid);
+
+  alert(JSON.stringify(callouts));
+
   });
+
 
 });
 
@@ -238,6 +241,7 @@ function testPing() {
 
 </body>
 </html>
+
 
 
 
