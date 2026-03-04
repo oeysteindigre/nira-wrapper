@@ -127,38 +127,8 @@ function activateFromFileMaker(uuid) {
 function filterCallouts(uuidList){
 
   alert("filterCallouts triggered");
-  
-  if (!viewerReady) return;
 
-  try {
-
-    if (typeof uuidList === "string") {
-      uuidList = JSON.parse(uuidList);
-    }
-
-    /* skjul alle callouts */
-    viewer.setSessionState({
-      calloutsVisible: false
-    });
-
-    /* vis de vi vil ha */
-    uuidList.forEach(function(uuid){
-
-      viewer.updateCallout(uuid,{
-        visible:true
-      });
-
-    });
-
-  } catch(e) {
-    console.log("Filter error:", e);
-  }
-  function filterCallouts(uuidList){
-   console.log("filter triggered");
-}
-
-window.filterCallouts = filterCallouts;
-
+  console.log("Parameter received:", uuidList);
 
 }
 
@@ -245,6 +215,7 @@ function testPing() {
 
 </body>
 </html>
+
 
 
 
