@@ -41,20 +41,22 @@ let viewerReady = false
 /* ================================
 INIT VIEWER (SDK VERSION)
 ================================ */
-
 async function startViewer(){
 
   alert("viewer starting");
 
-  viewer = await NiraViewer.create({
+  viewer = new NiraAPI.Viewer(
+    document.getElementById("viewer"),
+    {
+      url: "https://nidaros.nira.app/g/y-93qFDYS2W-8ACrlqVj8A",
+      showNavigationTools:true,
+      showMeasureTool:true,
+      showCalloutsList:true,
+      showRenderModes:true
+    }
+  );
 
-    element: document.getElementById("viewer"),
-
-    url: "https://nidaros.nira.app/g/y-93qFDYS2W-8ACrlqVj8A"
-
-  })
-
-  viewerReady = true
+  viewerReady = true;
 
 }
 
@@ -133,6 +135,7 @@ function sendToFileMaker(uuid){
 
 </body>
 </html>
+
 
 
 
