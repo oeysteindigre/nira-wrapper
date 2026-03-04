@@ -14,6 +14,7 @@ html, body {
   height: 100%;
   overflow: hidden;
 }
+
 #niraviewer {
   width: 100%;
   height: 100%;
@@ -22,6 +23,7 @@ html, body {
 </style>
 
 <script src="https://sdk.nira.app/js/viewer.js"></script>
+
 </head>
 
 <body>
@@ -67,10 +69,11 @@ viewer.on("asset_load_finish", function () {
     activateCalloutSafe(pendingUuid);
     pendingUuid = null;
   }
+
 });
 
 /* ==================================================
-   SAFE ACTIVATION (støtter flere SDK-varianter)
+   SAFE CALLOUT ACTIVATION
 ================================================== */
 
 function activateCalloutSafe(uuid) {
@@ -101,8 +104,7 @@ function activateCalloutSafe(uuid) {
 
 /* ==================================================
    FileMaker → Viewer
-   (Perform JavaScript in Web Viewer)
-   Function name MUST be: activateFromFileMaker
+   activate single callout
 ================================================== */
 
 function activateFromFileMaker(uuid) {
@@ -118,19 +120,76 @@ function activateFromFileMaker(uuid) {
 }
 
 /* ==================================================
+   FILTER CALLOUTS
+   FileMaker sender liste med UUID
+================================================== */
+
+function filterCallouts(uuidList) {
+
+  if (!viewerReady) return;
+
+  try {
+
+    if (typeof uuidList === "string") {
+      uuidList = JSON.parse(uuidList);
+    }
+
+    viewer.getCallouts().then(function(callouts){
+
+      callouts.forEach(function(c){
+
+        if (uuidList.includes(c.uuid)) {
+          viewer.updateCallout(c.uuid, { visible: true });
+        } else {
+          viewer.updateCallout(c.uuid, { visible: false });
+        }
+
+      });
+
+    });
+
+  } catch(e) {
+    console.log("Filter error:", e);
+  }
+
+}
+
+/* ==================================================
+   SHOW ALL CALLOUTS
+================================================== */
+
+function showAllCallouts(){
+
+  if (!viewerReady) return;
+
+  viewer.getCallouts().then(function(callouts){
+
+    callouts.forEach(function(c){
+      viewer.updateCallout(c.uuid, { visible:true });
+    });
+
+  });
+
+}
+
+/* ==================================================
    Viewer → FileMaker
 ================================================== */
 
 viewer.on("callout_created", function (info) {
+
   if (info && info.uuid) {
     sendToFileMaker(info.uuid);
   }
+
 });
 
 viewer.on("callout_activated", function (info) {
+
   if (info && info.uuid) {
     sendToFileMaker(info.uuid);
   }
+
 });
 
 /* ==================================================
@@ -162,10 +221,11 @@ function sendToFileMaker(uuid) {
   } catch (e) {
     console.log("Bridge error:", e);
   }
+
 }
 
 /* ==================================================
-   DEBUG (kan slettes senere)
+   DEBUG
 ================================================== */
 
 function testPing() {
