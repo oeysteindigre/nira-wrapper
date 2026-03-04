@@ -44,11 +44,11 @@ INIT VIEWER (SDK VERSION)
 
 async function startViewer(){
 
-  viewer = await NiraViewer.create({
+ viewer = await NiraViewer.create({
 
-    element: document.getElementById("viewer"),
+  element: document.getElementById("viewer"),
 
-    url: "https://nidaros.nira.app/g/y-93qFDYS2W-8ACrlqVj8A",
+  asset: "y-93qFDYS2W-8ACrlqVj8A",
 
     showNavigationTools:true,
     showMeasureTool:true,
@@ -134,3 +134,4 @@ function sendToFileMaker(uuid){
 
 </body>
 </html>
+
