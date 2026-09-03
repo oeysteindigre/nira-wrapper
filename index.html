@@ -133,28 +133,26 @@ function activateFromFileMaker(uuid) {
 
 function filterCallouts(uuidList){
 
-  const ids = JSON.parse(uuidList);
-
   if (!viewerReady) return;
 
-  let i = 0;
+  const ids = JSON.parse(uuidList);
+  const visibleIds = new Set(ids);
 
-  function activateNext(){
+  viewer.getCallouts().then(function(callouts){
 
-    if (i >= ids.length) return;
+    callouts.forEach(function(callout){
 
-    activateCalloutSafe(ids[i]);
+      const shouldBeVisible = visibleIds.has(callout.uuid);
 
-    i++;
+      viewer.updateCallout(callout.uuid, {
+        visible: shouldBeVisible
+      });
 
-    setTimeout(activateNext, 400);
+    });
 
-  }
-
-  activateNext();
+  });
 
 }
-
 
 
 /* ==================================================
