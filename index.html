@@ -142,16 +142,13 @@ function filterCallouts(uuidList){
 
     callouts.forEach(function(callout){
 
-      const shouldBeVisible = visibleIds.has(callout.uuid);
-
       viewer.updateCallout(callout.uuid, {
-        visible: shouldBeVisible
+        visible: visibleIds.has(callout.uuid)
       });
 
     });
 
   });
-
 }
 
 
