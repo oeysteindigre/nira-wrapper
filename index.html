@@ -41,7 +41,6 @@ html, body {
 
 let viewerReady = false;
 let pendingUuid = null;
-let allCalloutIds = [];
 let fileMakerUuidList = [];
 
 
@@ -69,31 +68,31 @@ viewer.on("asset_load_finish", function () {
 
   viewerReady = true;
 
-  viewer.getCallouts().then(function(callouts){
+  /*
+     Hvis FileMaker allerede har sendt listen
+     før modellen var ferdig lastet, bruker vi den nå.
+  */
 
-    allCalloutIds = callouts.map(function(c){
-      return c.uuid;
-    });
+  if (fileMakerUuidList.length > 0) {
+
+    viewer.setCalloutVisibilities(fileMakerUuidList);
+
+  } else {
 
     /*
-      Ved oppstart skjuler vi alle NIRA-callouts.
-      FileMaker kan deretter sende listen over
-      callouts som faktisk skal være synlige.
+       Ingen liste fra FileMaker ennå.
+       Skjul alle callouts.
     */
 
-    callouts.forEach(function(callout){
+    viewer.setCalloutVisibilities([]);
 
-      viewer.updateCallout(callout.uuid, {
-        visible: false
-      });
-
-    });
-
-  });
+  }
 
   if (pendingUuid) {
+
     activateCalloutSafe(pendingUuid);
     pendingUuid = null;
+
   }
 
 });
@@ -108,20 +107,27 @@ function activateCalloutSafe(uuid) {
   try {
 
     if (viewer.activateCalloutLabelOrUuid) {
+
       viewer.activateCalloutLabelOrUuid(uuid);
       return;
+
     }
 
     if (viewer.activateCallout) {
+
       viewer.activateCallout(uuid);
       return;
+
     }
 
     if (viewer.setSessionState) {
+
       viewer.setSessionState({
         activeCallout: uuid
       });
+
       return;
+
     }
 
     console.log("No supported activation method found.");
@@ -157,27 +163,11 @@ function activateFromFileMaker(uuid) {
 
 
 /* ==================================================
+   FileMaker → Viewer
    FILTER CALLOUTS
-   FileMaker sender JSON-liste med UUID
 ================================================== */
 
 function filterCallouts(uuidList) {
-
-  if (!viewerReady) {
-
-    /*
-      Hvis FileMaker sender listen før modellen
-      er ferdig lastet, lagrer vi den til senere.
-    */
-
-    try {
-      fileMakerUuidList = JSON.parse(uuidList);
-    } catch (e) {
-      console.log("Invalid UUID list:", e);
-    }
-
-    return;
-  }
 
   try {
 
@@ -185,19 +175,16 @@ function filterCallouts(uuidList) {
 
     fileMakerUuidList = ids;
 
-    const visibleIds = new Set(ids);
+    if (!viewerReady) return;
 
-    viewer.getCallouts().then(function(callouts) {
+    /*
+       Dette er selve filteret.
 
-      callouts.forEach(function(callout) {
+       UUID-er i listen vises.
+       Alle andre NIRA-callouts skjules.
+    */
 
-        viewer.updateCallout(callout.uuid, {
-          visible: visibleIds.has(callout.uuid)
-        });
-
-      });
-
-    });
+    viewer.setCalloutVisibilities(ids);
 
   } catch (e) {
 
@@ -218,13 +205,11 @@ function showAllCallouts() {
 
   viewer.getCallouts().then(function(callouts) {
 
-    callouts.forEach(function(c) {
-
-      viewer.updateCallout(c.uuid, {
-        visible: true
-      });
-
+    const ids = callouts.map(function(callout) {
+      return callout.uuid;
     });
+
+    viewer.setCalloutVisibilities(ids);
 
   });
 
@@ -232,27 +217,32 @@ function showAllCallouts() {
 
 
 /* ==================================================
-   Viewer → FileMaker
+   NEW CALLOUT
 ================================================== */
 
 viewer.on("callout_created", function(info) {
 
-  if (info && info.uuid) {
+  if (!info || !info.uuid) return;
 
-    sendToFileMaker(info.uuid);
+  /*
+     Send UUID to FileMaker.
+     FileMaker oppretter Callout-recorden.
+  */
 
-  }
+  sendToFileMaker(info.uuid);
 
 });
 
 
+/* ==================================================
+   CALLOUT ACTIVATED
+================================================== */
+
 viewer.on("callout_activated", function(info) {
 
-  if (info && info.uuid) {
+  if (!info || !info.uuid) return;
 
-    sendToFileMaker(info.uuid);
-
-  }
+  sendToFileMaker(info.uuid);
 
 });
 
