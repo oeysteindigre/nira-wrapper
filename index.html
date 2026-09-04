@@ -118,6 +118,30 @@ function activateFromFileMaker(uuid) {
 
 }
 
+function filterCallouts(uuidList) {
+
+  try {
+
+    const ids = JSON.parse(uuidList);
+
+    if (!viewerReady) {
+      return;
+    }
+
+    viewer.setSessionState({
+      showCallouts: ids.length > 0,
+      showMeasurements: false
+    });
+
+    viewer.setCalloutVisibilities(ids);
+
+  } catch (e) {
+
+    console.log("Filter error:", e);
+
+  }
+
+}
 
 /* NIRA → FILEMAKER */
 
