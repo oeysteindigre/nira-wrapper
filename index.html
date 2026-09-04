@@ -58,6 +58,13 @@ viewer.on("asset_load_finish", function () {
     pendingUuid = null;
   }
 
+  if (typeof FileMaker !== "undefined") {
+    FileMaker.PerformScript(
+      "NIRA_Send_Callout_List",
+      ""
+    );
+  }
+
 });
 
 
@@ -109,9 +116,7 @@ function activateFromFileMaker(uuid) {
   activateCalloutSafe(uuid);
 
 }
-function testPing() {
-  alert("JS reachable");
-}
+
 function filterCallouts(uuidList) {
   
   try {
