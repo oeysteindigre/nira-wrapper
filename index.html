@@ -157,7 +157,9 @@ function filterCallouts(data) {
 
     viewer.setCalloutVisibilities(ids);
 
-   const years = callouts.map((item, index) => 2016 + index);
+   const years = callouts
+  .map(item => Number(item.year))
+  .filter(year => Number.isFinite(year) && year > 0);
 
     if (years.length === 0) {
       return;
@@ -168,7 +170,7 @@ function filterCallouts(data) {
 
     callouts.forEach(item => {
 
-      const year = 2016 + callouts.indexOf(item);
+      const year = Number(item.year);
 
       if (!Number.isFinite(year) || year <= 0) {
         return;
