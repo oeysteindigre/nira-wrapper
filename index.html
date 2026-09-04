@@ -71,6 +71,15 @@ viewer.on("asset_load_finish", function () {
     pendingCalloutIds = null;
   }
 
+  if (typeof FileMaker !== "undefined") {
+
+    FileMaker.PerformScript(
+      "NIRA_Send_Callout_List",
+      ""
+    );
+
+  }
+
 });
 
 
