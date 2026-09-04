@@ -31,11 +31,11 @@ html, body {
 
 <script>
 
-let Ready = false;
+let viewerReady = false;
 let pendingUuid = null;
 let allCalloutIds = [];
 
-let  = new NiraAPI.Viewer(
+let viewer = new NiraAPI.Viewer(
   document.getElementById("niraviewer"),
   {
     showNavigationTools: true,
@@ -110,6 +110,9 @@ function activateFromFileMaker(uuid) {
 
 }
 
+
+/* FILTER CALLOUTS */
+
 function filterCallouts(uuidList) {
   
   try {
@@ -134,6 +137,7 @@ function filterCallouts(uuidList) {
   }
 
 }
+
 
 /* NIRA → FILEMAKER */
 
