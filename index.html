@@ -135,11 +135,15 @@ function activateFromFileMaker(uuid) {
 
 /* FILTER CALLOUTS */
 
-function filterCallouts(uuidList) {
-  
+/* FILTER CALLOUTS */
+
+function filterCallouts(data) {
+
   try {
 
-    const ids = JSON.parse(uuidList);
+    const callouts = JSON.parse(data);
+
+    const ids = callouts.map(item => item.uuid);
 
     if (!viewerReady) {
       pendingCalloutIds = ids;
@@ -152,6 +156,74 @@ function filterCallouts(uuidList) {
     });
 
     viewer.setCalloutVisibilities(ids);
+
+    const years = callouts
+      .map(item => Number(item.year))
+      .filter(year => Number.isFinite(year) && year > 0);
+
+    if (years.length === 0) {
+      return;
+    }
+
+    const minYear = Math.min(...years);
+    const maxYear = Math.max(...years);
+
+    callouts.forEach(item => {
+
+      const year = Number(item.year);
+
+      if (!Number.isFinite(year) || year <= 0) {
+        return;
+      }
+
+      let position = 0.5;
+
+      if (maxYear !== minYear) {
+        position = (year - minYear) / (maxYear - minYear);
+      }
+
+      let r;
+      let g;
+      let b;
+
+      if (position < 0.5) {
+
+        const t = position * 2;
+
+        r = Math.round(0 + 0 * t);
+        g = Math.round(120 + 135 * t);
+        b = Math.round(255 - 55 * t);
+
+      } else {
+
+        const t = (position - 0.5) * 2;
+
+        r = Math.round(0 + 255 * t);
+        g = Math.round(255 - 255 * t);
+        b = Math.round(200 - 200 * t);
+
+      }
+
+      try {
+
+        viewer.updateCallout(
+          item.uuid,
+          {
+            viewColor: [r, g, b]
+          }
+        );
+
+      } catch (e) {
+
+        console.log(
+          "Kunne ikke fargelegge callout:",
+          item.uuid,
+          e
+        );
+
+      }
+
+    });
 
   } catch (e) {
 
