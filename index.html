@@ -175,14 +175,14 @@ function filterCallouts(uuidList) {
 
     fileMakerUuidList = ids;
 
-    if (!viewerReady) return;
+    if (!viewerReady) {
+      return;
+    }
 
-    /*
-       Dette er selve filteret.
-
-       UUID-er i listen vises.
-       Alle andre NIRA-callouts skjules.
-    */
+    viewer.setSessionState({
+      showCallouts: ids.length > 0,
+      showMeasurements: false
+    });
 
     viewer.setCalloutVisibilities(ids);
 
