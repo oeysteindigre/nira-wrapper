@@ -310,39 +310,6 @@ function sendToFileMaker(uuid) {
    DEBUG
 ================================================== */
 
-function testPing() {
 
-  alert("TEST_JS fungerer");
-
-  setTimeout(function() {
-
-    viewer.getCallouts().then(function(callouts) {
-
-      const uuid = "aded0e6c-a6b1-4368-b48f-812de189d170";
-
-      const found = callouts.some(function(c) {
-        return c.uuid === uuid;
-      });
-
-      alert(
-        "NIRA har " + callouts.length +
-        " callouts.\n\n" +
-        "UUID funnet: " + found
-      );
-
-      if (found) {
-
-        viewer.setSessionState({
-          showCallouts: true,
-          showMeasurements: false
-        });
-
-        viewer.setCalloutVisibilities([uuid]);
-
-      }
-
-    });
-
-  }, 2000);
 
 }
