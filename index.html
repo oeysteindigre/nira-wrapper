@@ -42,6 +42,7 @@ html, body {
 let viewerReady = false;
 let pendingUuid = null;
 let allCalloutIds = [];
+let fileMakerUuidList = [];
 
 
 /* ==================================================
@@ -59,6 +60,7 @@ let viewer = new NiraAPI.Viewer(
   }
 );
 
+
 /* ==================================================
    MODEL READY
 ================================================== */
@@ -67,14 +69,32 @@ viewer.on("asset_load_finish", function () {
 
   viewerReady = true;
 
+  viewer.getCallouts().then(function(callouts){
+
+    allCalloutIds = callouts.map(function(c){
+      return c.uuid;
+    });
+
+    /*
+      Ved oppstart skjuler vi alle NIRA-callouts.
+      FileMaker kan deretter sende listen over
+      callouts som faktisk skal være synlige.
+    */
+
+    callouts.forEach(function(callout){
+
+      viewer.updateCallout(callout.uuid, {
+        visible: false
+      });
+
+    });
+
+  });
+
   if (pendingUuid) {
     activateCalloutSafe(pendingUuid);
     pendingUuid = null;
   }
-
-  viewer.getCallouts().then(function(callouts){
-    allCalloutIds = callouts.map(c => c.uuid);
-  });
 
 });
 
@@ -98,20 +118,26 @@ function activateCalloutSafe(uuid) {
     }
 
     if (viewer.setSessionState) {
-      viewer.setSessionState({ activeCallout: uuid });
+      viewer.setSessionState({
+        activeCallout: uuid
+      });
       return;
     }
 
     console.log("No supported activation method found.");
 
   } catch (e) {
+
     console.log("Activation failed:", e);
+
   }
+
 }
+
 
 /* ==================================================
    FileMaker → Viewer
-   activate single callout
+   Activate single callout
 ================================================== */
 
 function activateFromFileMaker(uuid) {
@@ -119,36 +145,66 @@ function activateFromFileMaker(uuid) {
   if (!uuid) return;
 
   if (!viewerReady) {
+
     pendingUuid = uuid;
     return;
+
   }
 
   activateCalloutSafe(uuid);
+
 }
+
 
 /* ==================================================
    FILTER CALLOUTS
-   FileMaker sender liste med UUID
+   FileMaker sender JSON-liste med UUID
 ================================================== */
 
-function filterCallouts(uuidList){
+function filterCallouts(uuidList) {
 
-  if (!viewerReady) return;
+  if (!viewerReady) {
 
-  const ids = JSON.parse(uuidList);
-  const visibleIds = new Set(ids);
+    /*
+      Hvis FileMaker sender listen før modellen
+      er ferdig lastet, lagrer vi den til senere.
+    */
 
-  viewer.getCallouts().then(function(callouts){
+    try {
+      fileMakerUuidList = JSON.parse(uuidList);
+    } catch (e) {
+      console.log("Invalid UUID list:", e);
+    }
 
-    callouts.forEach(function(callout){
+    return;
+  }
 
-      viewer.updateCallout(callout.uuid, {
-        visible: visibleIds.has(callout.uuid)
+  try {
+
+    const ids = JSON.parse(uuidList);
+
+    fileMakerUuidList = ids;
+
+    const visibleIds = new Set(ids);
+
+    viewer.getCallouts().then(function(callouts) {
+
+      callouts.forEach(function(callout) {
+
+        viewer.updateCallout(callout.uuid, {
+          visible: visibleIds.has(callout.uuid)
+        });
+
       });
 
     });
 
-  });
+  } catch (e) {
+
+    console.log("Filter error:", e);
+
+  }
+
 }
 
 
@@ -156,42 +212,54 @@ function filterCallouts(uuidList){
    SHOW ALL CALLOUTS
 ================================================== */
 
-function showAllCallouts(){
+function showAllCallouts() {
 
   if (!viewerReady) return;
 
-  viewer.getCallouts().then(function(callouts){
+  viewer.getCallouts().then(function(callouts) {
 
-    callouts.forEach(function(c){
-      viewer.updateCallout(c.uuid, { visible:true });
+    callouts.forEach(function(c) {
+
+      viewer.updateCallout(c.uuid, {
+        visible: true
+      });
+
     });
 
   });
 
 }
 
+
 /* ==================================================
    Viewer → FileMaker
 ================================================== */
 
-viewer.on("callout_created", function (info) {
+viewer.on("callout_created", function(info) {
 
   if (info && info.uuid) {
+
     sendToFileMaker(info.uuid);
+
   }
 
 });
 
-viewer.on("callout_activated", function (info) {
+
+viewer.on("callout_activated", function(info) {
 
   if (info && info.uuid) {
+
     sendToFileMaker(info.uuid);
+
   }
 
 });
+
 
 /* ==================================================
-   Bridge (Pro / Go / WebDirect safe)
+   Bridge
+   NIRA → FileMaker
 ================================================== */
 
 function sendToFileMaker(uuid) {
@@ -203,13 +271,26 @@ function sendToFileMaker(uuid) {
     if (typeof FileMaker !== "undefined") {
 
       if (FileMaker.PerformScriptWithOption) {
-        FileMaker.PerformScriptWithOption("Test_From_nira", uuid, 0);
+
+        FileMaker.PerformScriptWithOption(
+          "Test_From_nira",
+          uuid,
+          0
+        );
+
         return;
+
       }
 
       if (FileMaker.PerformScript) {
-        FileMaker.PerformScript("Test_From_nira", uuid);
+
+        FileMaker.PerformScript(
+          "Test_From_nira",
+          uuid
+        );
+
         return;
+
       }
 
     }
@@ -217,30 +298,25 @@ function sendToFileMaker(uuid) {
     console.log("FileMaker bridge not available");
 
   } catch (e) {
+
     console.log("Bridge error:", e);
+
   }
 
 }
+
 
 /* ==================================================
    DEBUG
 ================================================== */
 
 function testPing() {
+
   alert("JS reachable");
+
 }
 
 </script>
 
 </body>
 </html>
-
-
-
-
-
-
-
-
-
-
