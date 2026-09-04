@@ -31,11 +31,11 @@ html, body {
 
 <script>
 
-let viewerReady = false;
+let Ready = false;
 let pendingUuid = null;
 let allCalloutIds = [];
 
-let viewer = new NiraAPI.Viewer(
+let  = new NiraAPI.Viewer(
   document.getElementById("niraviewer"),
   {
     showNavigationTools: true,
@@ -58,13 +58,12 @@ viewer.on("asset_load_finish", function () {
     pendingUuid = null;
   }
 
-  viewer.getCallouts().then(function(callouts) {
-
-    allCalloutIds = callouts.map(function(c) {
-      return c.uuid;
-    });
-
-  });
+  if (typeof FileMaker !== "undefined") {
+    FileMaker.PerformScript(
+      "NIRA_Send_Callout_List",
+      ""
+    );
+  }
 
 });
 
