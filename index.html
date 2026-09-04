@@ -120,6 +120,7 @@ function filterCallouts(uuidList) {
     const ids = JSON.parse(uuidList);
 
     if (!viewerReady) {
+      pendingCalloutIds = ids;
       return;
     }
 
