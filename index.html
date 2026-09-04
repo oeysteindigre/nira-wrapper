@@ -179,12 +179,23 @@ function filterCallouts(uuidList) {
       return;
     }
 
-    viewer.setSessionState({
-      showCallouts: ids.length > 0,
-      showMeasurements: false
-    });
+    function applyFilter() {
 
-    viewer.setCalloutVisibilities(ids);
+      viewer.setSessionState({
+        showCallouts: ids.length > 0,
+        showMeasurements: false
+      });
+
+      viewer.setCalloutVisibilities(ids);
+
+    }
+
+    // Kjør med en gang
+    applyFilter();
+
+    // Kjør igjen etter at NIRA har fått tid til å oppdatere scenen
+    setTimeout(applyFilter, 500);
+    setTimeout(applyFilter, 1500);
 
   } catch (e) {
 
@@ -193,7 +204,6 @@ function filterCallouts(uuidList) {
   }
 
 }
-
 
 /* ==================================================
    SHOW ALL CALLOUTS
