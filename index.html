@@ -33,6 +33,7 @@ html, body {
 
 let viewerReady = false;
 let pendingUuid = null;
+let pendingCalloutIds = null;
 let allCalloutIds = [];
 
 let viewer = new NiraAPI.Viewer(
@@ -56,6 +57,18 @@ viewer.on("asset_load_finish", function () {
   if (pendingUuid) {
     activateCalloutSafe(pendingUuid);
     pendingUuid = null;
+  }
+
+  if (pendingCalloutIds) {
+
+    viewer.setSessionState({
+      showCallouts: pendingCalloutIds.length > 0,
+      showMeasurements: false
+    });
+
+    viewer.setCalloutVisibilities(pendingCalloutIds);
+
+    pendingCalloutIds = null;
   }
 
 });
