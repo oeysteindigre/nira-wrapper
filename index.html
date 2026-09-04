@@ -312,11 +312,13 @@ function sendToFileMaker(uuid) {
 
 function testPing() {
 
-  alert("JS reachable");
+  viewer.setSessionState({
+    showCallouts: true,
+    showMeasurements: false
+  });
+
+  viewer.setCalloutVisibilities([
+    "aded0e6c-a6b1-4368-b48f-812de189d170"
+  ]);
 
 }
-
-</script>
-
-</body>
-</html>
