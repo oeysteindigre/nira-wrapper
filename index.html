@@ -35,7 +35,12 @@ let viewerReady = false;
 let pendingUuid = null;
 let pendingCalloutIds = null;
 let allCalloutIds = [];
+let linkingMode = false;
 
+function startLinkingMode() {
+  linkingMode = true;
+}
+  
 let viewer = new NiraAPI.Viewer(
   document.getElementById("niraviewer"),
   {
@@ -238,9 +243,20 @@ function filterCallouts(data) {
 
 viewer.on("callout_created", function(info) {
 
-  if (info && info.uuid) {
-    sendToFileMaker(info.uuid);
+  if (!info || !info.uuid) return;
+
+  if (linkingMode) {
+
+    FileMaker.PerformScript(
+      "NIRA_Koble_Valgt_Registrering",
+      info.uuid
+    );
+
+    linkingMode = false;
+    return;
   }
+
+  sendToFileMaker(info.uuid);
 
 });
 
