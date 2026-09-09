@@ -192,27 +192,13 @@ function filterCallouts(data) {
         position = (year - minYear) / (maxYear - minYear);
       }
 
-      let r;
-      let g;
-      let b;
+     let r;
+let g;
+let b;
 
-      if (position < 0.5) {
-
-        const t = position * 2;
-
-        r = Math.round(0 + 0 * t);
-        g = Math.round(120 + 135 * t);
-        b = Math.round(255 - 55 * t);
-
-      } else {
-
-        const t = (position - 0.5) * 2;
-
-        r = Math.round(0 + 255 * t);
-        g = Math.round(255 - 255 * t);
-        b = Math.round(200 - 200 * t);
-
-      }
+r = 255;
+g = Math.round(60 + 195 * position);
+b = 0;
 
       try {
 
