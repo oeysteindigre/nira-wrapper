@@ -141,7 +141,14 @@ function activateFromFileMaker(uuid) {
   activateCalloutSafe(uuid);
 
 }
+  
+function setRenderMode(mode) {
+  if (!viewerReady) return;
 
+  viewer.setSessionState({
+    renderMode: mode
+  });
+}
 
 /* FILTER CALLOUTS */
 
