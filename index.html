@@ -145,19 +145,6 @@ function activateFromFileMaker(uuid) {
 function setRenderMode(mode) {
   if (!viewerReady) return;
 
-  if (mode === "Foto") {
-    viewer.setSessionState({
-      renderMode: "Shaded",
-      lighting: true,
-      renderTextures: true,
-      renderVertexColors: true,
-      renderAo: true,
-      renderFacetedNormals: true,
-      useSingleMat: false
-    });
-    return;
-  }
-
   viewer.setSessionState({
     renderMode: mode
   });
