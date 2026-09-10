@@ -178,12 +178,12 @@ function testMeasurement() {
 
   console.log("Tester Measurement:", uuid);
 
+  viewer.setCalloutVisibilities([uuid]);
+
   viewer.setSessionState({
     showCallouts: true,
-    showMeasurements: false
+    showMeasurements: true
   });
-
-  viewer.setCalloutVisibilities([uuid]);
 
 }
 
