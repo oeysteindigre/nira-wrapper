@@ -23,6 +23,19 @@ html, body {showNavigationTools: true,
 
 </head>
 
+  <button
+  onclick="testMeasurement()"
+  style="
+    position:fixed;
+    top:10px;
+    left:10px;
+    z-index:9999;
+    padding:10px;
+  "
+>
+  TEST MEASUREMENT
+</button>
+  
 <body>
 
 <iframe
@@ -154,7 +167,32 @@ function setRenderMode(mode) {
 /* FILTER CALLOUTS */
 
 /* FILTER CALLOUTS */
+function testMeasurement() {
 
+  const uuid = "bf712877-1c0b-4e8d-b55d-f200d2d2f5d3";
+
+  if (!viewerReady) {
+    console.log("NIRA er ikke ferdig lastet");
+    return;
+  }
+
+  console.log("Tester Measurement:", uuid);
+
+  viewer.setSessionState({
+    showCallouts: true,
+    showMeasurements: true
+  });
+
+  viewer.setCalloutVisibilities([uuid]);
+
+  try {
+    viewer.activateCallout(uuid);
+  } catch (e) {
+    console.log("Kunne ikke aktivere Measurement:", e);
+  }
+}
+
+  
 function filterCallouts(data) {
 
   try {
