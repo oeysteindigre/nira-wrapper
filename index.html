@@ -22,8 +22,10 @@ html, body {showNavigationTools: true,
 <script src="https://sdk.nira.app/js/viewer.js"></script>
 
 </head>
+  
+<body>
 
-  <button
+ <button
   onclick="testMeasurement()"
   style="
     position:fixed;
@@ -36,8 +38,6 @@ html, body {showNavigationTools: true,
   TEST MEASUREMENT
 </button>
   
-<body>
-
 <iframe
   id="niraviewer"
   src="https://nidaros.nira.app/g/y-93qFDYS2W-8ACrlqVj8A">
@@ -180,16 +180,11 @@ function testMeasurement() {
 
   viewer.setSessionState({
     showCallouts: true,
-    showMeasurements: true
+    showMeasurements: false
   });
 
   viewer.setCalloutVisibilities([uuid]);
 
-  try {
-    viewer.activateCallout(uuid);
-  } catch (e) {
-    console.log("Kunne ikke aktivere Measurement:", e);
-  }
 }
 
   
