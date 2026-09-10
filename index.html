@@ -22,22 +22,9 @@ html, body {showNavigationTools: true,
 <script src="https://sdk.nira.app/js/viewer.js"></script>
 
 </head>
-  
+
 <body>
 
- <button
-  onclick="testMeasurement()"
-  style="
-    position:fixed;
-    top:10px;
-    left:10px;
-    z-index:9999;
-    padding:10px;
-  "
->
-  TEST MEASUREMENT
-</button>
-  
 <iframe
   id="niraviewer"
   src="https://nidaros.nira.app/g/y-93qFDYS2W-8ACrlqVj8A">
@@ -167,27 +154,7 @@ function setRenderMode(mode) {
 /* FILTER CALLOUTS */
 
 /* FILTER CALLOUTS */
-function testMeasurement() {
 
-  const uuid = "bf712877-1c0b-4e8d-b55d-f200d2d2f5d3";
-
-  if (!viewerReady) {
-    console.log("NIRA er ikke ferdig lastet");
-    return;
-  }
-
-  console.log("Tester Measurement:", uuid);
-
-  viewer.setCalloutVisibilities([uuid]);
-
-  viewer.setSessionState({
-    showCallouts: true,
-    showMeasurements: true
-  });
-
-}
-
-  
 function filterCallouts(data) {
 
   try {
