@@ -157,7 +157,23 @@ function activateFromFileMaker(uuid) {
     return;
   }
 
-  activateCalloutSafe(uuid);
+  try {
+
+    // Sørg for at callouten er synlig
+    viewer.setCalloutVisibilities([uuid]);
+
+    // Aktiver callouten etter at synligheten er satt
+    setTimeout(function () {
+
+      viewer.activateCallout(uuid);
+
+    }, 100);
+
+  } catch (e) {
+
+    console.log("NIRA navigation error:", e);
+
+  }
 
 }
   
