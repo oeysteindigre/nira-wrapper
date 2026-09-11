@@ -122,34 +122,28 @@ viewer.on("asset_load_finish", function () {
 
 function activateCalloutSafe(uuid) {
 
+  if (!uuid) return;
+
+  if (!viewerReady) {
+    pendingUuid = uuid;
+    return;
+  }
+
   try {
 
-    if (viewer.activateCalloutLabelOrUuid) {
-      viewer.activateCalloutLabelOrUuid(uuid);
-      return;
-    }
-
-    if (viewer.activateCallout) {
-      viewer.activateCallout(uuid);
-      return;
-    }
-
-    if (viewer.setSessionState) {
-      viewer.setSessionState({
-        activeCallout: uuid
-      });
-      return;
-    }
-
-    console.log("No supported activation method found.");
+    viewer.activateCallout(uuid, {
+      transitionStyle: "GoToBookmark",
+      matchField: "uuid"
+    });
 
   } catch (e) {
 
-    console.log("Activation failed:", e);
+    console.log("activateCallout error:", e);
 
   }
 
 }
+
 
 
 /* FILEMAKER → NIRA */
