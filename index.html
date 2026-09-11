@@ -65,6 +65,16 @@ viewer.on("asset_load_finish", function () {
 
   viewerReady = true;
 
+  // TVING HVIT BAKGRUNN
+  viewer.setSessionState({
+    bgType: "Color",
+    bgColor: {
+      x: 1,
+      y: 1,
+      z: 1
+    }
+  });
+
   if (pendingUuid) {
     activateCalloutSafe(pendingUuid);
     pendingUuid = null;
@@ -73,12 +83,6 @@ viewer.on("asset_load_finish", function () {
   if (pendingCalloutIds) {
 
     viewer.setSessionState({
-      bgType: "Color",
-      bgColor: {
-        x: 1,
-        y: 1,
-        z: 1
-      },
       showCallouts: pendingCalloutIds.length > 0,
       showMeasurements: false
     });
@@ -86,18 +90,6 @@ viewer.on("asset_load_finish", function () {
     viewer.setCalloutVisibilities(pendingCalloutIds);
 
     pendingCalloutIds = null;
-
-  } else {
-
-    viewer.setSessionState({
-      bgType: "Color",
-      bgColor: {
-        x: 1,
-        y: 1,
-        z: 1
-      }
-    });
-
   }
 
   if (typeof FileMaker !== "undefined") {
@@ -110,7 +102,6 @@ viewer.on("asset_load_finish", function () {
   }
 
 });
-
 
 /* ACTIVATE CALLOUT */
 
