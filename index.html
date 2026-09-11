@@ -150,30 +150,24 @@ function activateCalloutSafe(uuid) {
 
 function activateFromFileMaker(uuid) {
 
-  if (!uuid) return;
+    console.log("NIRA mottok:", uuid);
 
-  if (!viewerReady) {
-    pendingUuid = uuid;
-    return;
-  }
+    if (!uuid) {
+        console.log("Ingen UUID");
+        return;
+    }
 
-  try {
+    if (!viewerReady) {
+        console.log("Viewer ikke klar");
+        pendingUuid = uuid;
+        return;
+    }
 
-    // Sørg for at callouten er synlig
-    viewer.setCalloutVisibilities([uuid]);
+    console.log("Kaller activateCallout");
 
-    // Aktiver callouten etter at synligheten er satt
-    setTimeout(function () {
+    viewer.activateCallout(uuid);
 
-      viewer.activateCallout(uuid);
-
-    }, 100);
-
-  } catch (e) {
-
-    console.log("NIRA navigation error:", e);
-
-  }
+    console.log("activateCallout ferdig");
 
 }
   
