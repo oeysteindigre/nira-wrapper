@@ -67,6 +67,14 @@ viewer.on("asset_load_finish", function () {
 
   viewerReady = true;
 
+function FM_Orbit() {
+    viewer.setToolMode(NiraAPI.Toolmode.Orbit);
+}
+
+function FM_Callout() {
+    viewer.setToolMode(NiraAPI.Toolmode.Callout);
+}
+  
   // TVING HVIT BAKGRUNN
   viewer.setSessionState({
     bgType: "Color",
