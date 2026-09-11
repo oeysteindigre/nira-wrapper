@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 
 <style>
-html, body {showNavigationTools: true,
+html, body {
   margin: 0;
   padding: 0;
   height: 100%;
@@ -67,13 +67,7 @@ viewer.on("asset_load_finish", function () {
 
   viewerReady = true;
 
-function FM_Orbit() {
-    viewer.setToolMode(NiraAPI.Toolmode.Orbit);
-}
 
-function FM_Callout() {
-    viewer.setToolMode(NiraAPI.Toolmode.Callout);
-}
   
   // TVING HVIT BAKGRUNN
   viewer.setSessionState({
@@ -84,7 +78,18 @@ function FM_Callout() {
       z: 1
     }
   });
-
+  
+  setTimeout(function () {
+    viewer.setSessionState({
+      bgType: "Color",
+      bgColor: {
+        x: 1,
+        y: 1,
+        z: 1
+      }
+    });
+  }, 1000);
+  
   if (pendingUuid) {
     activateCalloutSafe(pendingUuid);
     pendingUuid = null;
@@ -170,6 +175,14 @@ function setRenderMode(mode) {
   });
 }
 
+function setToolMode(mode) {
+    if (mode === "Orbit") {
+        viewer.setToolMode(NiraAPI.Toolmode.Orbit);
+    } else if (mode === "Callout") {
+        viewer.setToolMode(NiraAPI.Toolmode.Callout);
+    }
+}  
+  
 /* FILTER CALLOUTS */
 
 /* FILTER CALLOUTS */
