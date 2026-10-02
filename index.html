@@ -470,24 +470,23 @@ function updateYearCurve(
     !Number.isFinite(maxYear) ||
     callouts.length === 0
   ) {
-
     return;
-
   }
 
 
   /*
-   * Del tidsaksen opp i 40 intervaller.
+   * Flere intervaller gir et mer
+   * detaljert grunnlag for kurven.
    */
 
-  const bins = 40;
+  const bins = 80;
 
   const counts =
     new Array(bins).fill(0);
 
 
   /*
-   * Tell registreringer i hvert intervall.
+   * Tell registreringene.
    */
 
   callouts.forEach(function(item) {
@@ -500,9 +499,7 @@ function updateYearCurve(
       !Number.isFinite(year) ||
       year <= 0
     ) {
-
       return;
-
     }
 
 
@@ -547,55 +544,91 @@ function updateYearCurve(
 
 
   /*
-   * Lett glatting slik at fargeskalaen
-   * ikke blir hakkete.
+   * Kraftig glatting.
+   *
+   * Hvert punkt påvirkes av flere
+   * punkter på hver side.
    */
 
   const smooth =
-    counts.map(function(
-      value,
-      index
-    ) {
+    counts.map(function(value, index) {
 
-      const prev =
-        counts[index - 1] ?? value;
+      let total = 0;
+      let weightTotal = 0;
 
-      const next =
-        counts[index + 1] ?? value;
+
+      for (
+        let offset = -4;
+        offset <= 4;
+        offset++
+      ) {
+
+        const i =
+          index + offset;
+
+
+        if (
+          i < 0 ||
+          i >= bins
+        ) {
+          continue;
+        }
+
+
+        /*
+         * Gauss-lignende vekting.
+         * Nærmeste punkt får mest vekt.
+         */
+
+        const weight =
+          Math.exp(
+            -(offset * offset) / 5
+          );
+
+
+        total +=
+          counts[i] * weight;
+
+
+        weightTotal +=
+          weight;
+
+      }
 
 
       return (
-        prev * 0.25 +
-        value * 0.5 +
-        next * 0.25
+        total /
+        weightTotal
       );
 
     });
 
 
   /*
-   * Nederste kant på fargeskalaen.
+   * Minimumstykkelse.
+   * Kurven går aldri helt ned til null.
+   */
+
+  const minHeight = 6;
+
+
+  /*
+   * Maksimal høyde.
+   */
+
+  const maxHeight = 45;
+
+
+  /*
+   * Nederste kant.
    */
 
   const baseline =
     height - 3;
 
 
-  /*
-   * Maksimal tykkelse.
-   * Øk dette tallet hvis du vil ha
-   * enda kraftigere utslag.
-   */
-
-  const maxHeight = 38;
-
-
   const points = [];
 
-
-  /*
-   * Lag punktene i tetthetskurven.
-   */
 
   for (
     let i = 0;
@@ -612,9 +645,15 @@ function updateYearCurve(
       smooth[i] / maxCount;
 
 
+    const curveHeight =
+      minHeight +
+      normalized *
+      (maxHeight - minHeight);
+
+
     const y =
       baseline -
-      normalized * maxHeight;
+      curveHeight;
 
 
     points.push({
@@ -626,27 +665,81 @@ function updateYearCurve(
 
 
   /*
-   * Tegn selve området.
+   * Tegn en virkelig glatt kurve
+   * gjennom punktene.
    */
 
   ctx.beginPath();
 
 
   ctx.moveTo(
-    0,
+    points[0].x,
     baseline
   );
 
 
-  points.forEach(function(point) {
+  ctx.lineTo(
+    points[0].x,
+    points[0].y
+  );
 
-    ctx.lineTo(
-      point.x,
-      point.y
+
+  for (
+    let i = 0;
+    i < points.length - 1;
+    i++
+  ) {
+
+    const current =
+      points[i];
+
+    const next =
+      points[i + 1];
+
+
+    const midpointX =
+      (current.x + next.x) / 2;
+
+
+    const midpointY =
+      (current.y + next.y) / 2;
+
+
+    ctx.quadraticCurveTo(
+
+      current.x,
+      current.y,
+
+      midpointX,
+      midpointY
+
     );
 
-  });
+  }
 
+
+  /*
+   * Siste punkt.
+   */
+
+  const last =
+    points[points.length - 1];
+
+
+  ctx.quadraticCurveTo(
+
+    last.x,
+    last.y,
+
+    last.x,
+    last.y
+
+  );
+
+
+  /*
+   * Ned til baseline.
+   */
 
   ctx.lineTo(
     width,
@@ -658,8 +751,8 @@ function updateYearCurve(
 
 
   /*
-   * Fargegradient:
-   * rød → gul
+   * Samme rød → gul gradient
+   * som callouts.
    */
 
   const gradient =
@@ -689,8 +782,7 @@ function updateYearCurve(
 
   ctx.fill();
 
-}
-
+}  
 
 /* FILTER CALLOUTS */
 
