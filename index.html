@@ -67,6 +67,18 @@ html, body {
   padding: 0 2px;
 }
 
+/* HØYDEKURVE */
+
+#yearLegendCurve {
+  position: absolute;
+  left: 38px;
+  right: 38px;
+  top: -22px;
+  height: 28px;
+  width: calc(100% - 76px);
+  pointer-events: none;
+}
+
 </style>
 
 <script src="https://sdk.nira.app/js/viewer.js"></script>
@@ -78,6 +90,8 @@ html, body {
 <!-- ÅRSTALL-LEGENDE -->
 
 <div id="yearLegend">
+
+  <canvas id="yearLegendCurve"></canvas>
 
   <div id="yearLegendBar"></div>
 
@@ -383,6 +397,293 @@ function updateYearLegend(minYear, maxYear) {
 }
 
 
+/* HØYDEKURVE */
+
+function updateYearCurve(
+  callouts,
+  minYear,
+  maxYear
+) {
+
+  const canvas =
+    document.getElementById(
+      "yearLegendCurve"
+    );
+
+  if (!canvas) return;
+
+
+  const rect =
+    canvas.getBoundingClientRect();
+
+
+  const width =
+    Math.max(
+      1,
+      Math.round(rect.width)
+    );
+
+
+  const height =
+    Math.max(
+      1,
+      Math.round(rect.height)
+    );
+
+
+  const dpr =
+    window.devicePixelRatio || 1;
+
+
+  canvas.width =
+    width * dpr;
+
+  canvas.height =
+    height * dpr;
+
+
+  const ctx =
+    canvas.getContext("2d");
+
+
+  ctx.setTransform(
+    dpr,
+    0,
+    0,
+    dpr,
+    0,
+    0
+  );
+
+
+  ctx.clearRect(
+    0,
+    0,
+    width,
+    height
+  );
+
+
+  if (
+    !Number.isFinite(minYear) ||
+    !Number.isFinite(maxYear) ||
+    callouts.length === 0
+  ) {
+
+    return;
+
+  }
+
+
+  /*
+   * 40 intervaller langs tidsaksen.
+   */
+
+  const bins = 40;
+
+  const counts =
+    new Array(bins).fill(0);
+
+
+  callouts.forEach(function(item) {
+
+    const year =
+      Number(item.year);
+
+
+    if (
+      !Number.isFinite(year) ||
+      year <= 0
+    ) {
+
+      return;
+
+    }
+
+
+    let position = 0;
+
+
+    if (maxYear !== minYear) {
+
+      position =
+        (year - minYear) /
+        (maxYear - minYear);
+
+    }
+
+
+    position =
+      Math.max(
+        0,
+        Math.min(1, position)
+      );
+
+
+    const index =
+      Math.min(
+        bins - 1,
+        Math.floor(
+          position * bins
+        )
+      );
+
+
+    counts[index]++;
+
+  });
+
+
+  const maxCount =
+    Math.max(...counts);
+
+
+  if (maxCount === 0) return;
+
+
+  /*
+   * Litt glatting av kurven.
+   */
+
+  const smooth =
+    counts.map(function(
+      value,
+      index
+    ) {
+
+      const prev =
+        counts[index - 1] ?? value;
+
+      const next =
+        counts[index + 1] ?? value;
+
+
+      return (
+        prev * 0.25 +
+        value * 0.5 +
+        next * 0.25
+      );
+
+    });
+
+
+  /*
+   * Maksimal høyde.
+   */
+
+  const maxHeight = 25;
+
+  const points = [];
+
+
+  for (
+    let i = 0;
+    i < bins;
+    i++
+  ) {
+
+    const x =
+      (i / (bins - 1)) *
+      width;
+
+
+    const normalized =
+      smooth[i] / maxCount;
+
+
+    const y =
+      height -
+      normalized * maxHeight;
+
+
+    points.push({
+      x: x,
+      y: y
+    });
+
+  }
+
+
+  /*
+   * Fyll området under kurven.
+   */
+
+  ctx.beginPath();
+
+  ctx.moveTo(
+    0,
+    height
+  );
+
+
+  points.forEach(function(point) {
+
+    ctx.lineTo(
+      point.x,
+      point.y
+    );
+
+  });
+
+
+  ctx.lineTo(
+    width,
+    height
+  );
+
+
+  ctx.closePath();
+
+
+  ctx.fillStyle =
+    "rgba(80,80,80,0.16)";
+
+  ctx.fill();
+
+
+  /*
+   * Selve kurven.
+   */
+
+  ctx.beginPath();
+
+
+  points.forEach(function(
+    point,
+    index
+  ) {
+
+    if (index === 0) {
+
+      ctx.moveTo(
+        point.x,
+        point.y
+      );
+
+    }
+
+    else {
+
+      ctx.lineTo(
+        point.x,
+        point.y
+      );
+
+    }
+
+  });
+
+
+  ctx.strokeStyle =
+    "rgba(60,60,60,0.35)";
+
+  ctx.lineWidth = 1.5;
+
+  ctx.stroke();
+
+}
+
+
 /* FILTER CALLOUTS */
 
 function filterCallouts(data) {
@@ -465,6 +766,19 @@ function filterCallouts(data) {
       minYear,
       maxYear
     );
+
+
+    /* OPPDATER HØYDEKURVE */
+
+    requestAnimationFrame(function() {
+
+      updateYearCurve(
+        callouts,
+        minYear,
+        maxYear
+      );
+
+    });
 
 
     /* FARGELEGG CALLOUTS */
