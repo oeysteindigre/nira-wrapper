@@ -20,6 +20,47 @@ html, body {
   height: calc(100% + 160px);
   border: 0;
 }
+
+/* ÅRSTALL-LEGENDE */
+
+#yearLegend {
+  position: absolute;
+  left: 20px;
+  right: 20px;
+  bottom: 12px;
+  height: 42px;
+  z-index: 100;
+
+  background: rgba(255,255,255,0.88);
+  border-radius: 6px;
+  padding: 6px 12px;
+  box-sizing: border-box;
+
+  font-family: Arial, sans-serif;
+  font-size: 12px;
+  color: #333;
+
+  pointer-events: none;
+  display: none;
+}
+
+#yearLegendBar {
+  height: 10px;
+  border-radius: 5px;
+
+  background: linear-gradient(
+    to right,
+    rgb(255,60,0),
+    rgb(255,255,0)
+  );
+}
+
+#yearLegendLabels {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 3px;
+}
+
 </style>
 
 <script src="https://sdk.nira.app/js/viewer.js"></script>
@@ -28,10 +69,25 @@ html, body {
 
 <body>
 
+<!-- ÅRSTALL-LEGENDE -->
+
+<div id="yearLegend">
+
+  <div id="yearLegendBar"></div>
+
+  <div id="yearLegendLabels">
+    <span id="yearLegendMin"></span>
+    <span id="yearLegendMax"></span>
+  </div>
+
+</div>
+
+
 <iframe
   id="niraviewer"
   src="https://nidaros.nira.app/g/y-93qFDYS2W-8ACrlqVj8A">
 </iframe>
+
 
 <script>
 
@@ -41,10 +97,14 @@ let pendingCalloutIds = null;
 let allCalloutIds = [];
 let linkingMode = false;
 
+
 function startLinkingMode() {
   linkingMode = true;
 }
-  
+
+
+/* NIRA VIEWER */
+
 let viewer = new NiraAPI.Viewer(
   document.getElementById("niraviewer"),
   {
@@ -71,8 +131,8 @@ viewer.on("asset_load_finish", function () {
   viewerReady = true;
 
 
-  
-  // TVING HVIT BAKGRUNN
+  /* HVIT BAKGRUNN */
+
   viewer.setSessionState({
     bgType: "Color",
     bgColor: {
@@ -81,8 +141,10 @@ viewer.on("asset_load_finish", function () {
       z: 1
     }
   });
-  
+
+
   setTimeout(function () {
+
     viewer.setSessionState({
       bgType: "Color",
       bgColor: {
@@ -91,24 +153,41 @@ viewer.on("asset_load_finish", function () {
         z: 1
       }
     });
+
   }, 1000);
-  
+
+
+  /* AKTIVER VENTENDE CALLOUT */
+
   if (pendingUuid) {
+
     activateCalloutSafe(pendingUuid);
+
     pendingUuid = null;
+
   }
+
+
+  /* VIS VENTENDE CALLOUTS */
 
   if (pendingCalloutIds) {
 
     viewer.setSessionState({
+
       showCallouts: pendingCalloutIds.length > 0,
+
       showMeasurements: false
+
     });
 
     viewer.setCalloutVisibilities(pendingCalloutIds);
 
     pendingCalloutIds = null;
+
   }
+
+
+  /* SEND CALLOUT-LISTE TIL FILEMAKER */
 
   if (typeof FileMaker !== "undefined") {
 
@@ -121,76 +200,182 @@ viewer.on("asset_load_finish", function () {
 
 });
 
+
 /* ACTIVATE CALLOUT */
 
 function activateCalloutSafe(uuid) {
 
   if (!uuid) return;
 
+
   if (!viewerReady) {
+
     pendingUuid = uuid;
+
     return;
+
   }
+
 
   try {
 
     viewer.activateCallout(uuid, {
+
       transitionStyle: "GoToBookmark",
+
       matchField: "uuid"
+
     });
 
-  } catch (e) {
+  }
 
-    console.log("activateCallout error:", e);
+  catch (e) {
+
+    console.log(
+      "activateCallout error:",
+      e
+    );
 
   }
 
 }
-
 
 
 /* FILEMAKER → NIRA */
 
 function activateFromFileMaker(uuid) {
 
-    console.log("NIRA mottok:", uuid);
+  console.log(
+    "NIRA mottok:",
+    uuid
+  );
 
-    if (!uuid) {
-        console.log("Ingen UUID");
-        return;
-    }
 
-    if (!viewerReady) {
-        console.log("Viewer ikke klar");
-        pendingUuid = uuid;
-        return;
-    }
+  if (!uuid) {
 
-    console.log("Kaller activateCallout");
+    console.log(
+      "Ingen UUID"
+    );
 
-    viewer.activateCallout(uuid);
+    return;
 
-    console.log("activateCallout ferdig");
+  }
+
+
+  if (!viewerReady) {
+
+    console.log(
+      "Viewer ikke klar"
+    );
+
+    pendingUuid = uuid;
+
+    return;
+
+  }
+
+
+  console.log(
+    "Kaller activateCallout"
+  );
+
+
+  viewer.activateCallout(uuid);
+
+
+  console.log(
+    "activateCallout ferdig"
+  );
 
 }
-  
+
+
+/* RENDER MODE */
+
 function setRenderMode(mode) {
+
   if (!viewerReady) return;
 
+
   viewer.setSessionState({
+
     renderMode: mode
+
   });
+
 }
 
+
+/* TOOL MODE */
+
 function setToolMode(mode) {
-    if (mode === "Orbit") {
-        viewer.setToolMode(NiraAPI.Toolmode.Orbit);
-    } else if (mode === "Callout") {
-        viewer.setToolMode(NiraAPI.Toolmode.Callout);
-    }
-}  
-  
-/* FILTER CALLOUTS */
+
+  if (mode === "Orbit") {
+
+    viewer.setToolMode(
+      NiraAPI.Toolmode.Orbit
+    );
+
+  }
+
+  else if (mode === "Callout") {
+
+    viewer.setToolMode(
+      NiraAPI.Toolmode.Callout
+    );
+
+  }
+
+}
+
+
+/* ÅRSTALL-LEGENDE */
+
+function updateYearLegend(minYear, maxYear) {
+
+  const legend =
+    document.getElementById(
+      "yearLegend"
+    );
+
+  const minLabel =
+    document.getElementById(
+      "yearLegendMin"
+    );
+
+  const maxLabel =
+    document.getElementById(
+      "yearLegendMax"
+    );
+
+
+  if (!legend) return;
+
+
+  if (
+    !Number.isFinite(minYear) ||
+    !Number.isFinite(maxYear)
+  ) {
+
+    legend.style.display = "none";
+
+    return;
+
+  }
+
+
+  minLabel.textContent =
+    minYear;
+
+  maxLabel.textContent =
+    maxYear;
+
+
+  legend.style.display =
+    "block";
+
+}
+
 
 /* FILTER CALLOUTS */
 
@@ -198,79 +383,175 @@ function filterCallouts(data) {
 
   try {
 
-    const callouts = JSON.parse(data);
+    const callouts =
+      JSON.parse(data);
 
-    const ids = callouts.map(item => item.uuid);
+
+    const ids =
+      callouts.map(
+        item => item.uuid
+      );
+
 
     if (!viewerReady) {
+
       pendingCalloutIds = ids;
+
       return;
+
     }
+
 
     viewer.setSessionState({
-      showCallouts: ids.length > 0,
-      showMeasurements: false
+
+      showCallouts:
+        ids.length > 0,
+
+      showMeasurements:
+        false
+
     });
 
-    viewer.setCalloutVisibilities(ids);
 
-   const years = callouts
-  .map(item => Number(item.year))
-  .filter(year => Number.isFinite(year) && year > 0);
+    viewer.setCalloutVisibilities(
+      ids
+    );
+
+
+    /* FINN ÅRSTALL */
+
+    const years =
+      callouts
+
+        .map(
+          item => Number(item.year)
+        )
+
+        .filter(
+          year =>
+            Number.isFinite(year) &&
+            year > 0
+        );
+
 
     if (years.length === 0) {
+
+      document.getElementById(
+        "yearLegend"
+      ).style.display = "none";
+
       return;
+
     }
 
-    const minYear = Math.min(...years);
-    const maxYear = Math.max(...years);
+
+    const minYear =
+      Math.min(...years);
+
+
+    const maxYear =
+      Math.max(...years);
+
+
+    /* OPPDATER LEGENDE */
+
+    updateYearLegend(
+      minYear,
+      maxYear
+    );
+
+
+    /* FARGELEGG CALLOUTS */
 
     callouts.forEach(item => {
 
-      const year = Number(item.year);
+      const year =
+        Number(item.year);
 
-      if (!Number.isFinite(year) || year <= 0) {
+
+      if (
+        !Number.isFinite(year) ||
+        year <= 0
+      ) {
+
         return;
+
       }
+
 
       let position = 0.5;
 
-      if (maxYear !== minYear) {
-        position = (year - minYear) / (maxYear - minYear);
+
+      if (
+        maxYear !== minYear
+      ) {
+
+        position =
+          (year - minYear) /
+          (maxYear - minYear);
+
       }
 
-     let r;
-let g;
-let b;
 
-r = 255;
-g = Math.round(60 + 195 * position);
-b = 0;
+      let r;
+      let g;
+      let b;
+
+
+      r = 255;
+
+      g =
+        Math.round(
+          60 + 195 * position
+        );
+
+      b = 0;
+
 
       try {
 
         viewer.updateCallout(
+
           item.uuid,
+
           {
-            viewColor: [r, g, b]
+
+            viewColor: [
+              r,
+              g,
+              b
+            ]
+
           }
+
         );
 
-      } catch (e) {
+      }
+
+      catch (e) {
 
         console.log(
+
           "Kunne ikke fargelegge callout:",
+
           item.uuid,
+
           e
+
         );
 
       }
 
     });
 
-  } catch (e) {
+  }
 
-    console.log("Filter error:", e);
+  catch (e) {
+
+    console.log(
+      "Filter error:",
+      e
+    );
 
   }
 
@@ -279,71 +560,126 @@ b = 0;
 
 /* NIRA → FILEMAKER */
 
-viewer.on("callout_created", function(info) {
+viewer.on(
+  "callout_created",
+  function(info) {
 
-  if (!info || !info.uuid) return;
+    if (
+      !info ||
+      !info.uuid
+    ) return;
 
-  if (linkingMode) {
 
-    FileMaker.PerformScript(
-      "NIRA_Koble_Valgt_Registrering",
+    if (linkingMode) {
+
+      FileMaker.PerformScript(
+
+        "NIRA_Koble_Valgt_Registrering",
+
+        info.uuid
+
+      );
+
+
+      linkingMode = false;
+
+      return;
+
+    }
+
+
+    sendToFileMaker(
       info.uuid
     );
 
-    linkingMode = false;
-    return;
   }
-
-  sendToFileMaker(info.uuid);
-
-});
+);
 
 
-viewer.on("callout_activated", function(info) {
+viewer.on(
+  "callout_activated",
+  function(info) {
 
-  if (info && info.uuid) {
-    sendToFileMaker(info.uuid);
+    if (
+      info &&
+      info.uuid
+    ) {
+
+      sendToFileMaker(
+        info.uuid
+      );
+
+    }
+
   }
+);
 
-});
 
+/* SEND TIL FILEMAKER */
 
 function sendToFileMaker(uuid) {
 
   if (!uuid) return;
 
+
   try {
 
-    if (typeof FileMaker !== "undefined") {
+    if (
+      typeof FileMaker !==
+      "undefined"
+    ) {
 
-      if (FileMaker.PerformScriptWithOption) {
+
+      if (
+        FileMaker.PerformScriptWithOption
+      ) {
 
         FileMaker.PerformScriptWithOption(
+
           "Test_From_nira",
+
           uuid,
+
           0
+
         );
 
         return;
+
       }
 
-      if (FileMaker.PerformScript) {
+
+      if (
+        FileMaker.PerformScript
+      ) {
 
         FileMaker.PerformScript(
+
           "Test_From_nira",
+
           uuid
+
         );
 
         return;
+
       }
 
     }
 
-    console.log("FileMaker bridge not available");
 
-  } catch (e) {
+    console.log(
+      "FileMaker bridge not available"
+    );
 
-    console.log("Bridge error:", e);
+  }
+
+  catch (e) {
+
+    console.log(
+      "Bridge error:",
+      e
+    );
 
   }
 
