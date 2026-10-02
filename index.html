@@ -29,6 +29,7 @@ html, body {
   right: 18px;
   bottom: 12px;
   height: 20px;
+  overflow: visible;
   z-index: 100;
   font-family: Arial, sans-serif;
   font-size: 12px;
@@ -37,19 +38,31 @@ html, body {
   display: none;
 }
 
+/*
+ * Den gamle rette fargeskalaen skjules.
+ * Fargeskalaen tegnes nå av canvaset,
+ * slik at tykkelsen kan variere.
+ */
+
 #yearLegendBar {
+  display: none;
+}
+
+
+/* FARGESKALA MED REGISTRERINGSTETTHET */
+
+#yearLegendCurve {
   position: absolute;
   left: 38px;
   right: 38px;
-  top: 5px;
-  height: 10px;
-  border-radius: 5px;
-  background: linear-gradient(
-    to right,
-    rgb(255,60,0),
-    rgb(255,255,0)
-  );
+  top: -35px;
+  height: 45px;
+  width: calc(100% - 76px);
+  pointer-events: none;
 }
+
+
+/* ÅRSTALL */
 
 #yearLegendLabels {
   position: absolute;
@@ -65,18 +78,6 @@ html, body {
 #yearLegendLabels span {
   background: rgba(255,255,255,0.75);
   padding: 0 2px;
-}
-
-/* HØYDEKURVE */
-
-#yearLegendCurve {
-  position: absolute;
-  left: 38px;
-  right: 38px;
-  top: -22px;
-  height: 28px;
-  width: calc(100% - 76px);
-  pointer-events: none;
 }
 
 </style>
@@ -397,7 +398,7 @@ function updateYearLegend(minYear, maxYear) {
 }
 
 
-/* HØYDEKURVE */
+/* FARGESKALA MED REGISTRERINGSTETTHET */
 
 function updateYearCurve(
   callouts,
@@ -476,7 +477,7 @@ function updateYearCurve(
 
 
   /*
-   * 40 intervaller langs tidsaksen.
+   * Del tidsaksen opp i 40 intervaller.
    */
 
   const bins = 40;
@@ -484,6 +485,10 @@ function updateYearCurve(
   const counts =
     new Array(bins).fill(0);
 
+
+  /*
+   * Tell registreringer i hvert intervall.
+   */
 
   callouts.forEach(function(item) {
 
@@ -542,7 +547,8 @@ function updateYearCurve(
 
 
   /*
-   * Litt glatting av kurven.
+   * Lett glatting slik at fargeskalaen
+   * ikke blir hakkete.
    */
 
   const smooth =
@@ -568,13 +574,28 @@ function updateYearCurve(
 
 
   /*
-   * Maksimal høyde.
+   * Nederste kant på fargeskalaen.
    */
 
-  const maxHeight = 25;
+  const baseline =
+    height - 3;
+
+
+  /*
+   * Maksimal tykkelse.
+   * Øk dette tallet hvis du vil ha
+   * enda kraftigere utslag.
+   */
+
+  const maxHeight = 38;
+
 
   const points = [];
 
+
+  /*
+   * Lag punktene i tetthetskurven.
+   */
 
   for (
     let i = 0;
@@ -592,7 +613,7 @@ function updateYearCurve(
 
 
     const y =
-      height -
+      baseline -
       normalized * maxHeight;
 
 
@@ -605,14 +626,15 @@ function updateYearCurve(
 
 
   /*
-   * Fyll området under kurven.
+   * Tegn selve området.
    */
 
   ctx.beginPath();
 
+
   ctx.moveTo(
     0,
-    height
+    baseline
   );
 
 
@@ -628,58 +650,44 @@ function updateYearCurve(
 
   ctx.lineTo(
     width,
-    height
+    baseline
   );
 
 
   ctx.closePath();
 
 
-  ctx.fillStyle =
-    "rgba(80,80,80,0.16)";
-
-  ctx.fill();
-
-
   /*
-   * Selve kurven.
+   * Fargegradient:
+   * rød → gul
    */
 
-  ctx.beginPath();
+  const gradient =
+    ctx.createLinearGradient(
+      0,
+      0,
+      width,
+      0
+    );
 
 
-  points.forEach(function(
-    point,
-    index
-  ) {
-
-    if (index === 0) {
-
-      ctx.moveTo(
-        point.x,
-        point.y
-      );
-
-    }
-
-    else {
-
-      ctx.lineTo(
-        point.x,
-        point.y
-      );
-
-    }
-
-  });
+  gradient.addColorStop(
+    0,
+    "rgba(255,60,0,0.90)"
+  );
 
 
-  ctx.strokeStyle =
-    "rgba(60,60,60,0.35)";
+  gradient.addColorStop(
+    1,
+    "rgba(255,255,0,0.90)"
+  );
 
-  ctx.lineWidth = 1.5;
 
-  ctx.stroke();
+  ctx.fillStyle =
+    gradient;
+
+
+  ctx.fill();
 
 }
 
@@ -768,7 +776,7 @@ function filterCallouts(data) {
     );
 
 
-    /* OPPDATER HØYDEKURVE */
+    /* OPPDATER FARGESKALA MED TETTHET */
 
     requestAnimationFrame(function() {
 
